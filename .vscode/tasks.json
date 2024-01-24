@@ -1,0 +1,34 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "pip: install",
+            "detail": "pip install -r requirements.txt",
+            "type": "shell",
+            "problemMatcher": [],
+            "command": "${python.defaultInterpreterPath}",
+            "args": [
+                "-m",
+                "pip",
+                "install",
+                "-r",
+                "requirements.txt"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "python: artsandcraft.py",
+            "detail": "python artsandcraft.py",
+            "type": "process",
+            "problemMatcher": [],
+            "command": "${python.defaultInterpreterPath}",
+            "args": [
+                "artsandcraft.py"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
