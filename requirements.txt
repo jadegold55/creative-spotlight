@@ -1,5 +1,2 @@
-discord.py
+discord.py[voice]
 PyNaCl
-pafy
-opuslib
-python-dotenv
