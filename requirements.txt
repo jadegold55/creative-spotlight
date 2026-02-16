@@ -1,2 +1,7 @@
 discord.py[voice]
 PyNaCl
+discord
+bs4
+pandas
+dotenv
+requests
