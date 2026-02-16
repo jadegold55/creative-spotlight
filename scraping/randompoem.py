@@ -1,5 +1,4 @@
-# scraping.py
-# Add your web scraping logic here
+
 import bs4 as BeautifulSoup
 import requests
 import logging
@@ -15,11 +14,12 @@ def scrape():
         
         poems = response.json()
         if isinstance(poems, list) and len(poems) > 0:
-            poem = poems[0]
-            return {
-                "title": poem.get('title', 'Unknown Title'),
-                "author": poem.get('author', 'Unknown Author'),
-                "content": "\n".join(poem.get('lines', []))
+            for poem in poems:
+                if len("\n".join(poem.get('lines', []))) < 4096:  # Discord embed description limit
+                    return {
+                        "title": poem.get('title', 'Unknown Title'),
+                        "author": poem.get('author', 'Unknown Author'),
+                        "content": "\n".join(poem.get('lines', []))
             }
         else:
             print("API returned an error or empty result:", poem)
@@ -29,13 +29,10 @@ def scrape():
         print(f"Error fetching from Poetrydb: {e.with_traceback(e.__traceback__)}")
         return []
 
-# Usage
+
 
 
 if __name__ == "__main__":
-    # Print first 100 characters of the poem
+    
     scraped_poems = scrape()
-    if scraped_poems:
-        print(f"Scraped {len(scraped_poems)} poems.")
-        print(scraped_poems)
-        print(scraped_poems['title'])
+    

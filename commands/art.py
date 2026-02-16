@@ -15,7 +15,11 @@ from gallery_data import gallery_images
 
 # Set up Discord client and command tree
 
-
+#functionality to add:  find database of art pieces and artists, 
+# scrape for images and info, add to database, then create commands to pull from the 
+# database and display in discord. I can also add a command to allow users to submit their own art 
+# pieces to the gallery, which would be a fun way to engage the community and keep the gallery fresh with new content.
+#  I will need to add some error handling and logging to make sure it runs smoothly, especially if i want to run it on a schedule.
 
 
 # View class for gallery navigation and voting
