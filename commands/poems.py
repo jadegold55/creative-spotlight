@@ -32,6 +32,6 @@ class poetry(commands.Cog):
 
 #will add  a daily poem event later, but for now this is just a test to make sure the command works and the bot can fetch and display a poem correctly. I will need to add some error handling and logging to make sure it runs smoothly, especially if i want to run it on a schedule.
 #commands to add: [poem of the day, poem search, upload poem]
-#
+
 async def setup(bot):
     await bot.add_cog(poetry(bot))  

@@ -22,7 +22,7 @@ from gallery_data import gallery_images
 #  I will need to add some error handling and logging to make sure it runs smoothly, especially if i want to run it on a schedule.
 
 
-# View class for gallery navigation and voting
+#view ui for gallery
 class GalleryViewer(View):
     def __init__(self, images, user_id=None):
         super().__init__(timeout=None)
@@ -30,19 +30,19 @@ class GalleryViewer(View):
         self.current_image_index = 0  # Track which image is shown
         self.user_id = user_id  # Optionally track the user viewing
 
-    # Button to go to the previous image
+    #go to previous pic
     @discord.ui.button(label="Previous", style=discord.ButtonStyle.primary)
     async def previous(self, interaction: discord.Interaction, button: Button):
         self.current_image_index = (self.current_image_index - 1) % len(self.images)
         await self.update_image(interaction)
 
-    # Button to go to the next image
+    #next pic
     @discord.ui.button(label="Next", style=discord.ButtonStyle.primary)
     async def next(self, interaction: discord.Interaction, button: Button):
         self.current_image_index = (self.current_image_index + 1) % len(self.images)
         await self.update_image(interaction)
 
-    # Button to vote for the current image
+    # do u like the image or not
     @discord.ui.button(label="❤️", style=discord.ButtonStyle.success)
     async def love(self, interaction: discord.Interaction, button: Button):
         idx = self.current_image_index
@@ -69,22 +69,21 @@ class GalleryViewer(View):
             await interaction.edit_original_response(embed=embed, view=self)
         else:
             await interaction.response.edit_message(embed=embed, view=self)
-# Slash command to view the image gallery
+
 class Gallery(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # 3. Use @app_commands.command instead of @tree.command
     @app_commands.command(name="gallery", description="View the image gallery")
     async def gallery(self, interaction: discord.Interaction):
-        # Initialize Logging locally for this command
+        
         logger = logging.getLogger("gallery_command")
         
-        # Defer immediately to prevent timeout
+        
         await interaction.response.defer(thinking=True)
 
         if not gallery_images:
-            # Add default images if empty
+            
             gallery_images.extend([
                 {"url": "https://images.unsplash.com/photo-1506744038136-46273834b3fb", "votes": set()},
                 {"url": "https://images.unsplash.com/photo-1465101046530-73398c7f28ca", "votes": set()},
@@ -118,6 +117,6 @@ class Gallery(commands.Cog):
         gallery_images.append({"url": url, "uploader": interaction.user.id, "votes": set()})
         await interaction.followup.send("Your image has been added to the gallery!", ephemeral=True)
 
-# 4. The Setup Entry Point (Required for load_extension)
+#entry(Required for load_extension)
 async def setup(bot):
     await bot.add_cog(Gallery(bot))
