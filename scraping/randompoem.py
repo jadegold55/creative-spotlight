@@ -16,28 +16,27 @@ def scrape(author= None, title = None):
     else:
         url = "https://poetrydb.org/linecount/10"
     try:
-        response = requests.get(url)
-        
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
         poems = response.json()
 
         # while poem is empty or too long fetch one until we get a good one
         #too many requests? 
         if isinstance(poems, list) and len(poems) > 0:
-            print(len(poems))
             poem = random.choice(poems)
             return {
                         "title": poem.get('title', 'Unknown Title'),
                         "author": poem.get('author', 'Unknown Author'),
                         "content": "\n".join(poem.get('lines', []))
             }
-                    
+
         else:
-            print("API returned an error or empty result:", poem)
+            print("API returned an error or empty result:", poems)
             return None # don't want to return empty poem 
        
     except Exception as e:
-        print(f"Error fetching from Poetrydb: {e.with_traceback(e.__traceback__)}")
-        return [] # only happnes with badrequest, but want to return empty list so bot can handle it gracefully and not try to create an embed with empty data.
+        print(f"Error fetching from Poetrydb: {e}")
+        return None
 
 
 
