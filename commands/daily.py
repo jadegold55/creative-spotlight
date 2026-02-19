@@ -13,7 +13,7 @@ class Daily(commands.Cog):
     def cog_unload(self):
         self.daily_poem.cancel()
 
-    @tasks.loop(seconds=5)
+    @tasks.loop(hours=24)
     async def daily_poem(self):
         print("loop fired")
         channel = self.bot.get_channel(self.channel_id)
