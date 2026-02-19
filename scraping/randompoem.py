@@ -11,12 +11,13 @@ links = []
 # the point of this file might be more for having an event everyday which
 # the bot posts the new poem of the day from poetry foundation, but for now this is just a test to make sure i can scrape the page and get the poem links. I will need to add some error handling and logging to make sure it runs smoothly, especially if i want to run it on a schedule.
 def scrape(author=None, title=None):
+    random_linect = random.randint(4, 20)
     if author:
-        url = "https://poetrydb.org/author,linecount/" + author + ";10"
+        url = "https://poetrydb.org/author,linecount/" + author + ";" + random_linect
     elif title:
         url = "https://poetrydb.org/title/" + title
     else:
-        url = "https://poetrydb.org/linecount/10"
+        url = "https://poetrydb.org/linecount/15"
     try:
         response = requests.get(url)
 
