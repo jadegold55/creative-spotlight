@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 import os
-from config import TOKEN, GUILD_ID
+from bot.config import TOKEN, GUILD_ID
 
 
 # subclass of bot to handle loading extensions and syncing commands on ready
@@ -21,11 +21,11 @@ class MyBot(commands.Bot):
         print("--- Loading Extensions ---")
 
         # commands dirrectory finds all python files need in commands
-        for filename in os.listdir("./commands"):
+        for filename in os.listdir("bot/commands"):
             if filename.endswith(".py"):
                 try:
 
-                    await self.load_extension(f"commands.{filename[:-3]}")
+                    await self.load_extension(f"bot.commands.{filename[:-3]}")
                     print(f"Loaded succesfully: {filename}")
                 except Exception as e:
                     print(f"Failed to load {filename}: {e}")

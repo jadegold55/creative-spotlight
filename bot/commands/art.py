@@ -10,7 +10,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 # Import the in-memory gallery image store
-from gallery_data import gallery_images
+from bot.gallery_data import gallery_images
 
 
 # Set up Discord client and command tree

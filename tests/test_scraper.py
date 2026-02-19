@@ -1,4 +1,4 @@
-from scraping.randompoem import scrape
+from bot.scraping.randompoem import scrape
 
 
 def test_scrape_returns_poem():

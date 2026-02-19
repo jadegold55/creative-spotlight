@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands, tasks
-from scraping.randompoem import scrape
-from config import CHANNEL_ID
+from bot.scraping.randompoem import scrape
+from bot.config import CHANNEL_ID
 
 
 class Daily(commands.Cog):
