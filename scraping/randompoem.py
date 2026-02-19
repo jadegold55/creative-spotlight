@@ -20,9 +20,9 @@ def scrape(author=None, title=None):
         url = "https://poetrydb.org/linecount/15"
     try:
         response = requests.get(url)
-
+        response.raise_for_status()
         poems = response.json()
-        response.raise_for_status()  # will raise an error if the response is not successful, which we can catch and log
+        # will raise an error if the response is not successful, which we can catch and log
         # while poem is empty or too long fetch one until we get a good one
         # too many requests?
         if isinstance(poems, list) and len(poems) > 0:
