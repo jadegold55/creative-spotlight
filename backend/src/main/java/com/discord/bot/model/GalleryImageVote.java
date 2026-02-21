@@ -22,6 +22,9 @@ public class GalleryImageVote {
     private GalleryImage galleryImage;
     private Long userID;
 
+    public GalleryImageVote() {
+    }
+
     public GalleryImageVote(Long user, GalleryImage image) {
         this.userID = user;
         this.galleryImage = image;
