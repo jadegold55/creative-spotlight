@@ -13,23 +13,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class GalleryImageVoteService {
-    @Autowired
-    private GalleryImageVoteRepo gallery;
+    private final GalleryImageVoteRepo galleryVoteRepo;
+
+    public GalleryImageVoteService(GalleryImageVoteRepo galleryVoteRepo) {
+        this.galleryVoteRepo = galleryVoteRepo;
+    }
 
     public void addVote(Long userID, GalleryImage galleryimage) {
-
-        Optional<GalleryImageVote> existingVote = gallery.findByUserIDAndGalleryImage(userID, galleryimage);
-        if (existingVote.isPresent()) {
+        if (galleryVoteRepo.findByUserIDAndGalleryImage(userID, galleryimage).isPresent()) {
             throw new InvalidVote("Unique ID must have Unique image ID");
-        } else {
-            gallery.save(new GalleryImageVote(userID, galleryimage));
-
         }
-
+        galleryVoteRepo.save(new GalleryImageVote(userID, galleryimage));
     }
 
     public Long getVoteCount(GalleryImage image) {
-        return gallery.countByGalleryImage(image);
+        return galleryVoteRepo.countByGalleryImage(image);
     }
-
 }

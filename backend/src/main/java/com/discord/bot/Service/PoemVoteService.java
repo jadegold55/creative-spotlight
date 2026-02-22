@@ -11,19 +11,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class PoemVoteService {
-    @Autowired
-    private PoemVoteRepo poemrepo;
+    private final PoemVoteRepo poemVoteRepo;
+
+    public PoemVoteService(PoemVoteRepo poemVoteRepo) {
+        this.poemVoteRepo = poemVoteRepo;
+    }
 
     public void addVote(Long userID, Poem poem) {
-        Optional<PoemVote> existingVote = poemrepo.findByUserIDAndPoem(userID, poem);
-        if (existingVote.isPresent()) {
+        if (poemVoteRepo.findByUserIDAndPoem(userID, poem).isPresent()) {
             throw new InvalidVote("Unique ID must have Unique Poem ID");
-        } else {
-            poemrepo.save(new PoemVote(userID, poem));
         }
+        poemVoteRepo.save(new PoemVote(userID, poem));
     }
 
     public Long getVoteCount(Poem poem) {
-        return poemrepo.countByPoem(poem);
+        return poemVoteRepo.countByPoem(poem);
     }
 }
