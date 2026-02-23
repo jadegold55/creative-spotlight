@@ -21,7 +21,8 @@ class MyBot(commands.Bot):
         print("--- Loading Extensions ---")
 
         # commands dirrectory finds all python files need in commands
-        for filename in os.listdir("bot/commands"):
+        commands_dir = os.path.join(os.path.dirname(__file__), "commands")
+        for filename in os.listdir(commands_dir):
             if filename.endswith(".py"):
                 try:
 

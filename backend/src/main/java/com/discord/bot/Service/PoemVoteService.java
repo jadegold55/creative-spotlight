@@ -5,9 +5,6 @@ import com.discord.bot.Exceptions.InvalidVote;
 import com.discord.bot.Repository.PoemVoteRepo;
 import com.discord.bot.model.PoemVote;
 import com.discord.bot.model.Poem;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class PoemVoteService {

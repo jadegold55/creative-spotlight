@@ -3,5 +3,5 @@ PyNaCl
 discord
 bs4
 pandas
-dotenv
+python-dotenv
 requests
