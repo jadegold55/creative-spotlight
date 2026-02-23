@@ -3,14 +3,12 @@ import logging
 import discord
 from discord import app_commands
 from discord.ui import Button, View
-import os
+
 from discord.ext import commands
+import requests
 
-# For loading environment variables
-from dotenv import load_dotenv
 
-# Import the in-memory gallery image store
-from bot.gallery_data import gallery_images
+from bot.config import BACKEND_URL
 
 
 # Set up Discord client and command tree
@@ -28,7 +26,10 @@ class GalleryViewer(View):
         super().__init__(timeout=None)
         self.images = images  # List of image dicts
         self.current_image_index = 0  # Track which image is shown
-        self.user_id = user_id  # Optionally track the user viewing
+        self.user_id = user_id
+        if len(images) <= 1:
+            self.previous.disabled = True
+            self.next.disabled = True  # Optionally track the user viewing
 
     # go to previous pic
     @discord.ui.button(label="Previous", style=discord.ButtonStyle.primary)
@@ -48,23 +49,31 @@ class GalleryViewer(View):
         idx = self.current_image_index
         image = self.images[idx]
         user_id = interaction.user.id
-        if user_id in image["votes"]:
-            await interaction.response.send_message(
-                "You already voted for this image!", ephemeral=True
-            )
-        else:
-            image["votes"].add(user_id)
-            await interaction.response.send_message(
-                "Thanks for voting!", ephemeral=True
-            )
-            await self.update_image(interaction, edit_only=True)
 
-    # Helper to update the embed and view for the current image
-    async def update_image(self, interaction: discord.Interaction, edit_only=False):
+        response = requests.post(
+            f"{BACKEND_URL}/images/{image['id']}/vote",
+            params={"userID": user_id},
+        )
+        if response.status_code == 409:
+            await interaction.response.send_message(
+                "You've already voted for this image!", ephemeral=True
+            )
+            return
+        await interaction.response.send_message("Thanks for voting!", ephemeral=True)
+        vote_response = requests.get(f"{BACKEND_URL}/images/{image['id']}/votes")
+        vote_count = vote_response.json()
+        await self.update_image(interaction, edit_only=True, vote_count=vote_count)
+
+    async def update_image(
+        self, interaction: discord.Interaction, edit_only=False, vote_count=None
+    ):
         image = self.images[self.current_image_index]
+        if vote_count is None:
+            vote_response = requests.get(f"{BACKEND_URL}/images/{image['id']}/votes")
+            vote_count = vote_response.json()
         embed = discord.Embed(title="Gallery Viewer")
         embed.set_image(url=image["url"])
-        embed.set_footer(text=f"Votes: {len(image['votes'])}")
+        embed.set_footer(text=f"Votes: {vote_count if vote_count is not None else 0}")
         if edit_only:
             await interaction.edit_original_response(embed=embed, view=self)
         else:
@@ -82,25 +91,25 @@ class Gallery(commands.Cog):
 
         await interaction.response.defer(thinking=True)
 
-        if not gallery_images:
+        response = requests.get(f"{BACKEND_URL}/images/all")
+        images = response.json()
 
-            gallery_images.extend(
-                [
-                    {
-                        "url": "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-                        "votes": set(),
-                    },
-                    {
-                        "url": "https://images.unsplash.com/photo-1465101046530-73398c7f28ca",
-                        "votes": set(),
-                    },
-                ]
+        if not images:
+            await interaction.followup.send(
+                "The gallery is currently empty. Please check back later!",
+                ephemeral=True,
             )
+            return
 
-        view = GalleryViewer(gallery_images, user_id=interaction.user.id)
+        for img in images:
+            img["votes"] = set()  # Convert votes to a set for easy management
+        first_image = images[0]
+        vote_response = requests.get(f"{BACKEND_URL}/images/{first_image['id']}/votes")
+        vote_count = vote_response.json()
+        view = GalleryViewer(images, user_id=interaction.user.id)
         embed = discord.Embed(title="Gallery Viewer")
-        embed.set_image(url=gallery_images[0]["url"])
-        embed.set_footer(text=f"Votes: {len(gallery_images[0]['votes'])}")
+        embed.set_image(url=first_image["url"])
+        embed.set_footer(text=f"Votes: {vote_count}")
         # time based event. invoked by bot iself every week.
         # users submit their images then the veent lasts like a weekend or something``
 
@@ -131,8 +140,9 @@ class Gallery(commands.Cog):
             )
             return
 
-        gallery_images.append(
-            {"url": url, "uploader": interaction.user.id, "votes": set()}
+        requests.post(
+            f"{BACKEND_URL}/images/add",
+            params={"url": url, "uploaderid": interaction.user.id},
         )
         await interaction.followup.send(
             "Your image has been added to the gallery!", ephemeral=True
