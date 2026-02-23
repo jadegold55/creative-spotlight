@@ -1,21 +1,28 @@
 package com.discord.bot.Config;
 
+import java.beans.Customizer;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 
 @Configuration
-@EnableWebSecurity // Optional in modern Spring Boot apps, but good for clarity
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll())
-                .csrf(csrf -> csrf.disable());
+                        .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
+                        .anyRequest().authenticated())
+                .httpBasic(Customizer.withDefaults())
+                .csrf(Customizer.withDefaults());
+
         return http.build();
     }
 }
