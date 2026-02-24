@@ -3,6 +3,9 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import os
 from bot.config import TOKEN, GUILD_ID
+import sys
+
+sys.stdout.reconfigure(line_buffering=True)
 
 
 # subclass of bot to handle loading extensions and syncing commands on ready

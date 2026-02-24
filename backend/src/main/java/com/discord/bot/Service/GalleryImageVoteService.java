@@ -1,7 +1,7 @@
 package com.discord.bot.Service;
 
 import org.springframework.stereotype.Service;
-
+import java.util.Optional;
 import com.discord.bot.Exceptions.InvalidVote;
 import com.discord.bot.Repository.GalleryImageVoteRepo;
 import com.discord.bot.model.GalleryImage;
@@ -28,5 +28,9 @@ public class GalleryImageVoteService {
 
     public Long getVoteCount(GalleryImage image) {
         return galleryVoteRepo.countByGalleryImage(image);
+    }
+
+    public Optional<GalleryImage> getWinningImage() {
+        return galleryVoteRepo.findWinningImage();
     }
 }

@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.discord.bot.Repository.GalleryImageRepo;
 import com.discord.bot.Repository.GalleryImageVoteRepo;
 import com.discord.bot.Service.GalleryImageVoteService;
+import com.discord.bot.model.ContestWinner;
 import com.discord.bot.model.GalleryImage;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -61,5 +62,14 @@ public class GalleryImageController {
     @GetMapping("/all")
     public List<GalleryImage> getAllImages() {
         return galleryImageRepo.findAll();
+    }
+
+    @GetMapping("/contest/winner")
+    public ContestWinner getContestWinner() {
+        GalleryImage winner = galleryImageVoteService.getWinningImage()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No contest winner found"));
+        ContestWinner contestWinner = new ContestWinner(winner.getUrl(), winner.getuploaderID(),
+                galleryImageVoteService.getVoteCount(winner));
+        return contestWinner;
     }
 }
