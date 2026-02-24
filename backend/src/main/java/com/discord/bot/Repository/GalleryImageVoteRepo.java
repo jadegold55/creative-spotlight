@@ -8,12 +8,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.discord.bot.model.GalleryImageVote;
 
 public interface GalleryImageVoteRepo extends JpaRepository<GalleryImageVote, Long> {
-    interface ImagevoteCount {
+    interface ImageVoteTotal {
         Long getImageId();
 
         String getImageUrl();
 
-        Long getUploaderID();
+        Long getUploaderId();
 
         Long getVoteCount();
     }
