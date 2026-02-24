@@ -59,6 +59,17 @@ class GalleryViewer(View):
                 "You've already voted for this image!", ephemeral=True
             )
             return
+        if response.status_code == 410:
+            await interaction.response.send_message(
+                "Voting is closed for this contest.", ephemeral=True
+            )
+            return
+        if response.status_code != 200:
+            await interaction.response.send_message(
+                "Couldn't submit your vote right now. Please try again later.",
+                ephemeral=True,
+            )
+            return
         await interaction.response.send_message("Thanks for voting!", ephemeral=True)
         vote_response = requests.get(f"{BACKEND_URL}/images/{image['id']}/votes")
         vote_count = vote_response.json()

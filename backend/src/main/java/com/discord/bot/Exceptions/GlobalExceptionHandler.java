@@ -14,6 +14,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(VotingClosedException.class)
+    public ResponseEntity<String> handleVotingClosedException(VotingClosedException ex) {
+
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.GONE);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGenericException(Exception ex) {
 

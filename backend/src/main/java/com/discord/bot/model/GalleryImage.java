@@ -19,6 +19,8 @@ public class GalleryImage {
     private long uploaderID;
 
     private LocalDateTime uploadedAt;
+    private LocalDateTime contestDeadline;
+    private Long contestId;
 
     private String url;
 
@@ -30,6 +32,13 @@ public class GalleryImage {
         this.url = url;
         this.uploaderID = uploaderID;
         this.uploadedAt = LocalDateTime.now();
+        this.contestDeadline = this.uploadedAt.plusDays(7);
+    }
+
+    public GalleryImage(String url, long uploaderID, Long contestId, LocalDateTime contestDeadline) {
+        this(url, uploaderID);
+        this.contestId = contestId;
+        this.contestDeadline = contestDeadline;
     }
 
     public GalleryImage(String url) {
@@ -63,4 +72,21 @@ public class GalleryImage {
     public LocalDateTime getUploadedAt() {
         return uploadedAt;
     }
+
+    public Long getContestId() {
+        return contestId;
+    }
+
+    public void setContestId(Long contestId) {
+        this.contestId = contestId;
+    }
+
+    public LocalDateTime getContestDeadline() {
+        return contestDeadline;
+    }
+
+    public void setContestDeadline(LocalDateTime contestDeadline) {
+        this.contestDeadline = contestDeadline;
+    }
+
 }

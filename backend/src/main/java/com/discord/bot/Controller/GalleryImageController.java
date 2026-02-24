@@ -58,6 +58,11 @@ public class GalleryImageController {
         galleryImageRepo.delete(getImageOrThrow(id));
     }
 
+    @GetMapping("/contests/{contestId}/winner")
+    public GalleryImageVoteService.ContestWinner getContestWinner(@PathVariable Long contestId) {
+        return galleryImageVoteService.getWinningImageForContest(contestId);
+    }
+
     @GetMapping("/all")
     public List<GalleryImage> getAllImages() {
         return galleryImageRepo.findAll();
