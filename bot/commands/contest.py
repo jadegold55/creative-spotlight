@@ -16,7 +16,7 @@ class Spotlight(commands.Cog):
     def cog_unload(self):
         self.weekly_contest.cancel()
 
-    @tasks.loop(weeks=1)
+    @tasks.loop(hours=168)
     async def weekly_contest(self):
 
         print("fired")
