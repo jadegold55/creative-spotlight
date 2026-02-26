@@ -13,8 +13,8 @@ The repository includes:
 - `/gallery` — browse uploaded images in an interactive viewer and vote with a ❤️ button.
 - `/upload` — submit an image URL or attachment to the gallery.
 - `/poem` — fetch a random poem (optionally filtered by author/title).
-- '/art' - fetch a random piece of art from a random mueseum
-- '/setup' - configure the bot to use channels of your choice
+- `/art'` - fetch a random piece of art from a random mueseum
+- `/setup` - configure the bot to use channels of your choice
 
 ### Weekly spotlight contest
 - A scheduled task announces a weekly art contest in a configured spotlight channel.
