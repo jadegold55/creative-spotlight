@@ -1,13 +1,13 @@
 import discord
 from discord.ext import commands, tasks
 from bot.scraping.randompoem import scrape
-from bot.config import CHANNEL_ID
+from bot.config import BACKEND_URL
+import requests
 
 
 class Daily(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.channel_id = CHANNEL_ID
         self.daily_poem.start()
 
     def cog_unload(self):
@@ -15,15 +15,13 @@ class Daily(commands.Cog):
 
     @tasks.loop(hours=24)
     async def daily_poem(self):
-        print("loop fired")
-        channel = self.bot.get_channel(self.channel_id)
-        print(f"{channel}")
-        if not channel:
+        resp = requests.get(f"{BACKEND_URL}/guilds/with-poems")
+        if resp.status_code != 200:
             return
 
+        guilds = resp.json()
         poem_data = scrape()
         if not poem_data:
-            print("uh oh")
             return
 
         embed = discord.Embed(
@@ -31,7 +29,14 @@ class Daily(commands.Cog):
             description=f"By {poem_data['author']}\n\n{poem_data['content']}",
             color=discord.Color.purple(),
         )
-        await channel.send("@everyone", embed=embed)
+
+        for guild in guilds:
+            channel = self.bot.get_channel(guild["poemChannelId"])
+            if channel:
+                try:
+                    await channel.send("@everyone", embed=embed)
+                except Exception as e:
+                    print(f"Failed to send poem to guild {guild['guildId']}: {e}")
 
     @daily_poem.before_loop
     async def before_daily(self):

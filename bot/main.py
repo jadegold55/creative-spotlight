@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 import os
-from bot.config import TOKEN, GUILD_ID
+from bot.config import TOKEN
 import sys
 
 sys.stdout.reconfigure(line_buffering=True)
@@ -39,30 +39,14 @@ class MyBot(commands.Bot):
     async def on_ready(self):
         print(f"Logged in as {self.user} (ID: {self.user.id})")
 
-        # this will scale to more guilds if i end up adding them later
-        if GUILD_ID:
-            try:
-                # syncing commands to the specified guild allows for much faster updates
-                # during development, as global command changes can take up to an hour
-                # to propagate.
-                guild_object = discord.Object(id=int(GUILD_ID))
-                # self.try.copyglobal makes it so global commands are synced to server
-                self.tree.copy_global_to(guild=guild_object)
-                # bot looks at command tree in commmands folder and syncs to guild
-                # it will specify all commands synced
-
-                synced = await self.tree.sync(guild=guild_object)
-                print(f"Synced {len(synced)} commands to guild {GUILD_ID}")
-                for command in synced:
-                    print(
-                        f"  - {command.name}"
-                        + "\n"
-                        + f"    Type: {command.type}"
-                        + "\n"
-                        + f"    Description: {command.description}"
-                    )
-            except Exception as e:
-                print(f"Error syncing: {e}")
+        print(f"Logged in as {self.user} (ID: {self.user.id})")
+        try:
+            synced = await self.tree.sync()
+            print(f"Synced {len(synced)} commands globally")
+            for command in synced:
+                print(f"  - {command.name}")
+        except Exception as e:
+            print(f"Error syncing: {e}")
 
 
 client = MyBot()

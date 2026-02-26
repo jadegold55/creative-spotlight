@@ -91,7 +91,9 @@ class Gallery(commands.Cog):
 
         await interaction.response.defer(thinking=True)
 
-        response = requests.get(f"{BACKEND_URL}/images/all")
+        response = requests.get(
+            f"{BACKEND_URL}/images/all", params={"guildid": interaction.guild.id}
+        )
         images = response.json()
 
         if not images:
@@ -140,10 +142,19 @@ class Gallery(commands.Cog):
             )
             return
 
-        requests.post(
+        resp = requests.post(
             f"{BACKEND_URL}/images/add",
-            params={"url": url, "uploaderid": interaction.user.id},
+            params={
+                "url": url,
+                "uploaderid": interaction.user.id,
+                "guildid": interaction.guild.id,
+            },
         )
+        if resp.status_code != 200:
+            await interaction.followup.send(
+                f"Failed to upload: {resp.status_code}", ephemeral=True
+            )
+            return
         await interaction.followup.send(
             "Your image has been added to the gallery!", ephemeral=True
         )

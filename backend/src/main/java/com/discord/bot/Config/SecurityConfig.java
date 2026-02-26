@@ -15,11 +15,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
+                        .requestMatchers("/images/**").permitAll()
+                        .requestMatchers("/guilds/**").permitAll()
                         .anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults())
-                .csrf(Customizer.withDefaults());
+                .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }

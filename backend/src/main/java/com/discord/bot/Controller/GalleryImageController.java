@@ -39,8 +39,8 @@ public class GalleryImageController {
     }
 
     @PostMapping("/add")
-    public GalleryImage addImage(@RequestParam String url, @RequestParam Long uploaderid) {
-        GalleryImage image = new GalleryImage(url, uploaderid);
+    public GalleryImage addImage(@RequestParam String url, @RequestParam Long uploaderid, @RequestParam Long guildid) {
+        GalleryImage image = new GalleryImage(url, uploaderid, guildid);
         return galleryImageRepo.save(image);
     }
 
@@ -60,16 +60,18 @@ public class GalleryImageController {
     }
 
     @GetMapping("/all")
-    public List<GalleryImage> getAllImages() {
+    public List<GalleryImage> getAllImages(@RequestParam(required = false) Long guildid) {
+        if (guildid != null) {
+            return galleryImageRepo.findByGuildid(guildid);
+        }
         return galleryImageRepo.findAll();
     }
 
     @GetMapping("/contest/winner")
-    public ContestWinner getContestWinner() {
-        GalleryImage winner = galleryImageVoteService.getWinningImage()
+    public ContestWinner getContestWinner(@RequestParam Long guildid) {
+        GalleryImage winner = galleryImageVoteService.getWinningImage(guildid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No contest winner found"));
-        ContestWinner contestWinner = new ContestWinner(winner.getUrl(), winner.getuploaderID(),
+        return new ContestWinner(winner.getUrl(), winner.getuploaderID(),
                 galleryImageVoteService.getVoteCount(winner));
-        return contestWinner;
     }
 }

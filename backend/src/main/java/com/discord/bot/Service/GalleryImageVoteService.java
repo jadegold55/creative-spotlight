@@ -30,7 +30,7 @@ public class GalleryImageVoteService {
         return galleryVoteRepo.countByGalleryImage(image);
     }
 
-    public Optional<GalleryImage> getWinningImage() {
-        return galleryVoteRepo.findWinningImage();
+    public Optional<GalleryImage> getWinningImage(Long guildID) {
+        return galleryVoteRepo.findWinningImageByGuild(guildID);
     }
 }
