@@ -41,8 +41,13 @@ class MyBot(commands.Bot):
 
         print(f"Logged in as {self.user} (ID: {self.user.id})")
         try:
+            # old_guild = discord.Object(id=)
+            # self.tree.clear_commands(guild=old_guild)
+            # await self.tree.sync(guild=old_guild)
+            # print("Cleared old guild commands")
+
+            # Sync globally
             synced = await self.tree.sync()
-            print(f"Synced {len(synced)} commands globally")
             for command in synced:
                 print(f"  - {command.name}")
         except Exception as e:

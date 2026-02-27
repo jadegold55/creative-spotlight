@@ -1,8 +1,9 @@
 import discord
 from discord.ext import commands, tasks
 from bot.scraping.randompoem import scrape
-from bot.config import BACKEND_URL
-import requests
+from bot.apihelper.api import get
+from datetime import datetime
+import pytz
 
 
 class Daily(commands.Cog):
@@ -13,26 +14,35 @@ class Daily(commands.Cog):
     def cog_unload(self):
         self.daily_poem.cancel()
 
-    @tasks.loop(hours=24)
+    @tasks.loop(minutes=1)
     async def daily_poem(self):
-        resp = requests.get(f"{BACKEND_URL}/guilds/with-poems")
-        if resp.status_code != 200:
+        guilds = await get(f"guilds/with-poems")
+        if not guilds:
             return
-
-        guilds = resp.json()
-        poem_data = scrape()
-        if not poem_data:
-            return
-
-        embed = discord.Embed(
-            title=f"Poem of the Day\n\n{poem_data['title']}",
-            description=f"By {poem_data['author']}\n\n{poem_data['content']}",
-            color=discord.Color.purple(),
-        )
-
         for guild in guilds:
-            channel = self.bot.get_channel(guild["poemChannelId"])
-            if channel:
+            hour = guild.get("poemHour")
+            minute = guild.get("poemMinute")
+            tz_name = guild.get("poemTimezone")
+            if hour is None or minute is None or not tz_name:
+                continue
+            try:
+                tz = pytz.timezone(tz_name)
+            except pytz.exceptions.UnknownTimeZoneError:
+                continue
+            now = datetime.now(tz)
+            if now.hour == hour and now.minute == minute:
+                channel = self.bot.get_channel(guild["poemChannelId"])
+                if not channel:
+                    continue
+
+                poem_data = scrape()
+                if not poem_data:
+                    continue
+                embed = discord.Embed(
+                    title=f"Poem of the Day\n\n{poem_data['title']}",
+                    description=f"By {poem_data['author']}\n\n{poem_data['content']}",
+                    color=discord.Color.purple(),
+                )
                 try:
                     await channel.send("@everyone", embed=embed)
                 except Exception as e:

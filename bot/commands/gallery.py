@@ -6,7 +6,7 @@ from discord.ui import Button, View
 
 from discord.ext import commands
 import requests
-
+from bot.apihelper.api import post, get
 
 from bot.config import BACKEND_URL
 
@@ -50,18 +50,17 @@ class GalleryViewer(View):
         image = self.images[idx]
         user_id = interaction.user.id
 
-        response = requests.post(
-            f"{BACKEND_URL}/images/{image['id']}/vote",
+        status, response = await post(
+            f"images/{image['id']}/vote",
             params={"userID": user_id},
         )
-        if response.status_code == 409:
+        if status == 409:
             await interaction.response.send_message(
                 "You've already voted for this image!", ephemeral=True
             )
             return
         await interaction.response.send_message("Thanks for voting!", ephemeral=True)
-        vote_response = requests.get(f"{BACKEND_URL}/images/{image['id']}/votes")
-        vote_count = vote_response.json()
+        vote_count = await get(f"images/{image['id']}/votes")
         await self.update_image(interaction, edit_only=True, vote_count=vote_count)
 
     async def update_image(
@@ -69,8 +68,7 @@ class GalleryViewer(View):
     ):
         image = self.images[self.current_image_index]
         if vote_count is None:
-            vote_response = requests.get(f"{BACKEND_URL}/images/{image['id']}/votes")
-            vote_count = vote_response.json()
+            vote_count = await get(f"images/{image['id']}/votes")
         embed = discord.Embed(title="Gallery Viewer")
         embed.set_image(url=image["url"])
         embed.set_footer(text=f"Votes: {vote_count if vote_count is not None else 0}")
@@ -91,10 +89,7 @@ class Gallery(commands.Cog):
 
         await interaction.response.defer(thinking=True)
 
-        response = requests.get(
-            f"{BACKEND_URL}/images/all", params={"guildid": interaction.guild.id}
-        )
-        images = response.json()
+        images = await get(f"images/all", params={"guildid": interaction.guild.id})
 
         if not images:
             await interaction.followup.send(
@@ -106,8 +101,7 @@ class Gallery(commands.Cog):
         for img in images:
             img["votes"] = set()  # Convert votes to a set for easy management
         first_image = images[0]
-        vote_response = requests.get(f"{BACKEND_URL}/images/{first_image['id']}/votes")
-        vote_count = vote_response.json()
+        vote_count = await get(f"images/{first_image['id']}/votes")
         view = GalleryViewer(images, user_id=interaction.user.id)
         embed = discord.Embed(title="Gallery Viewer")
         embed.set_image(url=first_image["url"])
@@ -142,17 +136,17 @@ class Gallery(commands.Cog):
             )
             return
 
-        resp = requests.post(
-            f"{BACKEND_URL}/images/add",
+        status, resp = await post(
+            f"images/add",
             params={
                 "url": url,
                 "uploaderid": interaction.user.id,
                 "guildid": interaction.guild.id,
             },
         )
-        if resp.status_code != 200:
+        if status != 200:
             await interaction.followup.send(
-                f"Failed to upload: {resp.status_code}", ephemeral=True
+                f"Failed to upload: {status}", ephemeral=True
             )
             return
         await interaction.followup.send(
