@@ -31,8 +31,12 @@ class Setup(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(
-        name="setup-poems", description="Configure bot channels for this server"
+    setup_group = app_commands.Group(
+        name="setup", description="Setup commands, channels, and events for the bot"
+    )
+
+    @setup_group.command(
+        name="poems", description="Configure bot channels for this server"
     )
     @app_commands.describe(
         poem_channel="Channel for daily poems",
@@ -65,12 +69,6 @@ class Setup(commands.Cog):
                 "timezone": timezone.value,
             },
         )
-        if not poem_channel:
-            await interaction.response.send_message(
-                "Please specify at least one channel to configure.", ephemeral=True
-            )
-            return
-
         if status != 200:
             await interaction.response.send_message(
                 "Failed to save settings. Please try again.", ephemeral=True
@@ -85,8 +83,8 @@ class Setup(commands.Cog):
             ephemeral=True,
         )
 
-    @app_commands.command(
-        name="setup-contest", description="Configure bot channels for this server"
+    @setup_group.command(
+        name="contest", description="Configure bot channels for this server"
     )
     @app_commands.describe(
         channel="Channel for weekly spotlight contests",

@@ -22,6 +22,7 @@ class MyBot(commands.Bot):
     # and load the extensions before the bot is ready.
     async def setup_hook(self):
         print("--- Loading Extensions ---")
+        self.tree.on_error = self.on_app_command_error
 
         # commands dirrectory finds all python files need in commands
         commands_dir = os.path.join(os.path.dirname(__file__), "commands")
@@ -52,6 +53,24 @@ class MyBot(commands.Bot):
                 print(f"  - {command.name}")
         except Exception as e:
             print(f"Error syncing: {e}")
+
+    async def on_app_command_error(self, interaction, error):
+        if isinstance(error, discord.app_commands.CommandOnCooldown):
+            embed = discord.Embed(
+                title="Slow down!",
+                description=f"Try again in **{error.retry_after:.0f}** seconds.",
+                color=discord.Color.orange(),
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+
+        else:
+            embed = discord.Embed(
+                title="Something went wrong",
+                description="An error occurred while processing the command.",
+                color=discord.Color.red(),
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            print(f"Error in command {interaction.command.name}: {error}")
 
 
 client = MyBot()

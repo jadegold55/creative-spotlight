@@ -8,7 +8,7 @@ class poetry(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # scraper will send an ephemeral message of a random poem to someone!
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.command(name="poem", description="Get a random poem")
     @app_commands.describe(author="Enter by Author", title="Enter by title")
     async def poem(

@@ -10,6 +10,7 @@ class Art(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.command(name="art", description="Get a random piece of art")
     async def random_art(self, interaction: discord.Interaction):
 
@@ -17,13 +18,13 @@ class Art(commands.Cog):
         print(f"image_url being sent: {art_data['image_url']}")
         if not art_data:
             await interaction.response.send_message(
-                "Sorry, I couldn't fetch a piece of art at the moment."
+                "Sorry, I couldn't fetch a piece of art at the moment.", ephemeral=True
             )
             return
         image_response = requests.get(art_data["image_url"])
         if image_response.status_code != 200:
             await interaction.response.send_message(
-                "Sorry, I couldn't fetch the art image at the moment."
+                "Sorry, I couldn't fetch the art image at the moment.", ephemeral=True
             )
             return
         image_file = discord.File(

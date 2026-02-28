@@ -84,6 +84,7 @@ class Gallery(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.command(name="gallery", description="View the image gallery")
     async def gallery(self, interaction: discord.Interaction):
         logger = logging.getLogger("gallery_command")
@@ -111,6 +112,7 @@ class Gallery(commands.Cog):
         except Exception as e:
             logger.error(f"Error sending gallery: {e}")
 
+    @app_commands.checks.cooldown(1, 30.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.command(name="upload", description="Upload an image to the gallery")
     @app_commands.describe(file="Attach an image file")
     async def upload(
