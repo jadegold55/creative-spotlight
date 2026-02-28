@@ -3,7 +3,7 @@
 Creative Spotlight is a Discord community project that blends art sharing, poetry discovery, and weekly spotlight contests.
 
 The repository includes:
-- A **Python Discord bot** for slash commands and interactive gallery voting.
+- A **Python Discord bot** for slash commands, interactive gallery viewing, contests, random art/ poems, and so much more!
 - A **Spring Boot backend** for persisting gallery images and votes.
 - A **PostgreSQL database** for storage.
 
