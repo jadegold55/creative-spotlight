@@ -5,6 +5,8 @@ from bot.apihelper.api import get
 from datetime import datetime
 import pytz
 
+from bot.config import PUBLIC_URL
+
 
 class Spotlight(commands.Cog):
     def __init__(self, bot):
@@ -84,7 +86,7 @@ class Spotlight(commands.Cog):
             description=f"Congratulations to <@{winner['uploaderid']}> for winning this week's contest!",
             color=discord.Color.gold(),
         )
-        embed.set_image(url=winner["url"])
+        embed.set_image(url=f"{PUBLIC_URL}/images/{winner['id']}/file")
         embed.set_footer(text=f"Votes: {winner['votes']}")
 
         try:

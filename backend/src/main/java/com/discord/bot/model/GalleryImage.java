@@ -7,6 +7,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Lob;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 // gallery image has two differences here, one will be evenet based to schedule a dicosrd event where people can upload their pictures to the gallery so then what we
 // want to do is when people view the gallery, lets let it be random and make sure that another pciture can't be seen in the gallery until all the pictures have been seen. so we can do this by having a list of picture ids that have been seen and then when we get a random picture, we check if it has been seen before and if it has, we get another random picture until we find one that hasn't been seen before. then we add that picture id to the list of seen pictures. once all pictures have been seen, we clear the list of seen pictures and start over. this way, we can ensure that all pictures are seen before any picture is seen again. the other difference is that we want to track who uploaded the picture and when it was uploaded so we can display that information in the gallery viewer.
 
@@ -21,22 +24,21 @@ public class GalleryImage {
     @Column(name = "guild_id")
     private long guildid;
     private LocalDateTime uploadedAt;
-
-    private String url;
+    private String contentType;
+    @JsonIgnore
+    @Column(columnDefinition = "bytea")
+    private byte[] imageData;
 
     public GalleryImage() {
     }
 
     // when imaage is created
-    public GalleryImage(String url, long uploaderID, long guildid) {
-        this.url = url;
+    public GalleryImage(String contentType, byte[] imageData, long uploaderID, long guildid) {
+        this.contentType = contentType;
+        this.imageData = imageData;
         this.uploaderID = uploaderID;
         this.guildid = guildid;
         this.uploadedAt = LocalDateTime.now();
-    }
-
-    public GalleryImage(String url) {
-        this.url = url;
     }
 
     public long getuploaderID() {
@@ -55,10 +57,6 @@ public class GalleryImage {
         this.id = id;
     }
 
-    public String getUrl() {
-        return url;
-    }
-
     public void setUploaderID(long uploaderID) {
         this.uploaderID = uploaderID;
     }
@@ -67,8 +65,20 @@ public class GalleryImage {
         this.guildid = guildid;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public byte[] getImageData() {
+        return imageData;
+    }
+
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
     }
 
     public LocalDateTime getUploadedAt() {

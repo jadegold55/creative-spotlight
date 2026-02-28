@@ -1,0 +1,104 @@
+CREATIVE SPOTLIGHT - TODO LIST
+================================
+
+1. SQL QUERIES
+--------------
+Currently, Spring Data JPA generates all SQL automatically through method names
+like findByGuildId() and the @Query annotation. Adding custom SQL queries means
+writing optimized queries for cases where the auto-generated ones aren't efficient
+enough. For example, instead of making two separate calls to get an image and its
+vote count, you could write a single query that joins both tables and returns
+everything at once. This reduces database round trips and speeds things up.
+You'd use the @Query annotation with JPQL or native SQL in your repositories.
+
+
+2. RATE LIMITING - BUCKET4J
+---------------------------
+[ ] Add bucket4j-core and caffeine dependencies to pom.xml
+[ ] Create RateLimitService.java
+    - Manages token buckets per IP using Caffeine cache
+    - Defines bandwidth rules (e.g. 20 requests/minute)
+[ ] Create RateLimitFilter.java
+    - Servlet filter that intercepts every request
+    - Checks the bucket, returns 429 if empty
+    - Passes through with X-Rate-Limit-Remaining header if allowed
+[ ] Update SecurityConfig.java
+    - Make sure the filter is in the chain
+[ ] Convert controllers to use ResponseEntity
+    - Gives control over status codes and headers
+[ ] Define different rate limits for read vs write
+    - Stricter limits on POST/DELETE endpoints (e.g. 10/min)
+    - More lenient limits on GET endpoints (e.g. 30/min)
+[ ] Test rate limiting
+    - Verify 429 responses when limit is exceeded
+    - Verify Retry-After header is correct
+
+
+3. DISCORD COMMAND COOLDOWNS
+----------------------------
+Add @app_commands.checks.cooldown() to slash commands.
+Example: @app_commands.checks.cooldown(1, 30.0)  # 1 use per 30 seconds per user
+
+[ ] Add cooldown to /upload - prevent spam uploads
+[ ] Add cooldown to /gallery - prevent excessive gallery fetches
+[ ] Add cooldown to /poem - prevent spamming poem requests
+[ ] Add cooldown to /art - prevent spamming art requests
+[ ] Add error handler for CommandOnCooldown - show users how long to wait
+
+
+4. CACHING GALLERY RESPONSES
+-----------------------------
+Instead of hitting the database every time someone opens the gallery,
+cache the results in memory for a short period.
+
+[ ] Backend side
+    - Enable Spring's @Cacheable on the gallery endpoint
+    - Repeated requests within a time window return cached data
+      instead of querying Postgres
+[ ] Bot side
+    - Store gallery results in a dictionary keyed by guild ID with a TTL
+      (e.g. 60 seconds)
+    - Multiple users opening the gallery in the same server share one API call
+[ ] Cache invalidation
+    - Invalidate cache when someone uploads or votes so data stays fresh
+
+
+5. JAVA BACKEND TESTS
+----------------------
+[ ] Controller tests (using @WebMvcTest)
+    - Test GET /images/{id} returns image or 404
+    - Test POST /images/add creates image and returns 200
+    - Test POST /images/{id}/vote records vote or returns 409 for duplicate
+    - Test DELETE /images/{id} removes image
+    - Test GET /images/all returns list filtered by guildId
+    - Test GET /images/contest/winner returns winner or 404
+    - Test POST /guilds/{id}/setup-poems saves poem settings
+    - Test POST /guilds/{id}/setup-contest saves contest settings
+    - Test GET /guilds/with-spotlight returns configured guilds
+    - Test GET /guilds/with-poems returns configured guilds
+[ ] Service tests (using @SpringBootTest or unit tests with Mockito)
+    - Test GalleryImageVoteService.addVote() succeeds for new vote
+    - Test GalleryImageVoteService.addVote() throws InvalidVote for duplicate
+    - Test GalleryImageVoteService.getVoteCount() returns correct count
+    - Test GalleryImageVoteService.getWinningImage() returns top voted image
+    - Test PoemVoteService.addVote() succeeds for new vote
+    - Test PoemVoteService.addVote() throws InvalidVote for duplicate
+    - Test PoemVoteService.getVoteCount() returns correct count
+[ ] Repository tests (using @DataJpaTest)
+    - Test GalleryImageRepo basic CRUD operations
+    - Test GalleryImageRepo.findByGuildId() filters correctly
+    - Test GalleryImageVoteRepo.findByUserIDAndGalleryImage() finds existing vote
+    - Test GalleryImageVoteRepo.countByGalleryImage() returns correct count
+    - Test GalleryImageVoteRepo.findWinningImageByGuild() returns top voted
+    - Test GuildSettingsRepo.findBySpotlightChannelIdIsNotNull()
+    - Test GuildSettingsRepo.findByPoemChannelIdIsNotNull()
+[ ] Rate limiting tests
+    - Test requests within limit return 200
+    - Test requests exceeding limit return 429
+    - Test Retry-After header is present on 429 responses
+
+
+
+
+[ ]
+    -image to assci art generator !!!!!!

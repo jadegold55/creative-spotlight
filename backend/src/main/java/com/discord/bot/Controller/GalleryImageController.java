@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.ResponseEntity;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/images")
@@ -38,10 +41,24 @@ public class GalleryImageController {
         return getImageOrThrow(id);
     }
 
+    // @GetMapping("random")
+    @GetMapping("/{id}/file")
+    public ResponseEntity<byte[]> getImageFile(@PathVariable Long id) {
+        GalleryImage image = getImageOrThrow(id);
+        return ResponseEntity.ok()
+                .header("Content-Type", image.getContentType())
+                .body(image.getImageData());
+    }
+
     @PostMapping("/add")
-    public GalleryImage addImage(@RequestParam String url, @RequestParam Long uploaderid, @RequestParam Long guildid) {
-        GalleryImage image = new GalleryImage(url, uploaderid, guildid);
-        return galleryImageRepo.save(image);
+    public GalleryImage addImage(@RequestParam("file") MultipartFile file, @RequestParam Long uploaderid,
+            @RequestParam Long guildid) {
+        try {
+            GalleryImage image = new GalleryImage(file.getContentType(), file.getBytes(), uploaderid, guildid);
+            return galleryImageRepo.save(image);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to read image file", e);
+        }
     }
 
     @GetMapping("/{id}/votes")
@@ -71,7 +88,7 @@ public class GalleryImageController {
     public ContestWinner getContestWinner(@RequestParam Long guildid) {
         GalleryImage winner = galleryImageVoteService.getWinningImage(guildid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No contest winner found"));
-        return new ContestWinner(winner.getUrl(), winner.getuploaderID(),
+        return new ContestWinner(winner.getId(), winner.getuploaderID(),
                 galleryImageVoteService.getVoteCount(winner));
     }
 }

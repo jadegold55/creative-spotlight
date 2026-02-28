@@ -1,14 +1,16 @@
 # Discord and UI imports
 import logging
+import aiohttp
 import discord
 from discord import app_commands
+from discord import file
 from discord.ui import Button, View
 
 from discord.ext import commands
 import requests
 from bot.apihelper.api import post, get
 
-from bot.config import BACKEND_URL
+from bot.config import PUBLIC_URL
 
 
 # Set up Discord client and command tree
@@ -70,7 +72,7 @@ class GalleryViewer(View):
         if vote_count is None:
             vote_count = await get(f"images/{image['id']}/votes")
         embed = discord.Embed(title="Gallery Viewer")
-        embed.set_image(url=image["url"])
+        embed.set_image(url=f"{PUBLIC_URL}/images/{image['id']}/file")
         embed.set_footer(text=f"Votes: {vote_count if vote_count is not None else 0}")
         if edit_only:
             await interaction.edit_original_response(embed=embed, view=self)
@@ -84,27 +86,22 @@ class Gallery(commands.Cog):
 
     @app_commands.command(name="gallery", description="View the image gallery")
     async def gallery(self, interaction: discord.Interaction):
-
         logger = logging.getLogger("gallery_command")
-
         await interaction.response.defer(thinking=True)
-
         images = await get(f"images/all", params={"guildid": interaction.guild.id})
-
         if not images:
             await interaction.followup.send(
                 "The gallery is currently empty. Please check back later!",
                 ephemeral=True,
             )
             return
-
         for img in images:
             img["votes"] = set()  # Convert votes to a set for easy management
         first_image = images[0]
         vote_count = await get(f"images/{first_image['id']}/votes")
         view = GalleryViewer(images, user_id=interaction.user.id)
         embed = discord.Embed(title="Gallery Viewer")
-        embed.set_image(url=first_image["url"])
+        embed.set_image(url=f"{PUBLIC_URL}/images/{first_image['id']}/file")
         embed.set_footer(text=f"Votes: {vote_count}")
         # time based event. invoked by bot iself every week.
         # users submit their images then the veent lasts like a weekend or something``
@@ -115,19 +112,16 @@ class Gallery(commands.Cog):
             logger.error(f"Error sending gallery: {e}")
 
     @app_commands.command(name="upload", description="Upload an image to the gallery")
-    @app_commands.describe(image="Paste an image URL", file="Attach an image file")
+    @app_commands.describe(file="Attach an image file")
     async def upload(
         self,
         interaction: discord.Interaction,
-        image: str = None,
         file: discord.Attachment = None,
     ):
         await interaction.response.defer(thinking=True, ephemeral=True)
 
         url = None
-        if image and (image.startswith("http://") or image.startswith("https://")):
-            url = image
-        elif file and file.content_type and file.content_type.startswith("image"):
+        if file and file.content_type and file.content_type.startswith("image"):
             url = file.url
 
         if not url:
@@ -136,14 +130,16 @@ class Gallery(commands.Cog):
             )
             return
 
-        status, resp = await post(
-            f"images/add",
-            params={
-                "url": url,
-                "uploaderid": interaction.user.id,
-                "guildid": interaction.guild.id,
-            },
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as res:
+                image_bytes = await res.read()
+        form = aiohttp.FormData()
+        form.add_field(
+            "file", image_bytes, filename=file.filename, content_type=file.content_type
         )
+        form.add_field("uploaderid", str(interaction.user.id))
+        form.add_field("guildid", str(interaction.guild.id))
+        status, resp = await post(f"images/add", data=form)
         if status != 200:
             await interaction.followup.send(
                 f"Failed to upload: {status}", ephemeral=True
