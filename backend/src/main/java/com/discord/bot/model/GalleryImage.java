@@ -20,9 +20,9 @@ public class GalleryImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private long uploaderID;
+    private Long uploaderID;
     @Column(name = "guild_id")
-    private long guildid;
+    private Long guildid;
     private LocalDateTime uploadedAt;
     private String contentType;
     @JsonIgnore
@@ -33,7 +33,7 @@ public class GalleryImage {
     }
 
     // when imaage is created
-    public GalleryImage(String contentType, byte[] imageData, long uploaderID, long guildid) {
+    public GalleryImage(String contentType, byte[] imageData, Long uploaderID, Long guildid) {
         this.contentType = contentType;
         this.imageData = imageData;
         this.uploaderID = uploaderID;
@@ -41,11 +41,11 @@ public class GalleryImage {
         this.uploadedAt = LocalDateTime.now();
     }
 
-    public long getuploaderID() {
+    public Long getuploaderID() {
         return uploaderID;
     }
 
-    public long getGuildid() {
+    public Long getGuildid() {
         return guildid;
     }
 
@@ -57,11 +57,11 @@ public class GalleryImage {
         this.id = id;
     }
 
-    public void setUploaderID(long uploaderID) {
+    public void setUploaderID(Long uploaderID) {
         this.uploaderID = uploaderID;
     }
 
-    public void setGuildid(long guildid) {
+    public void setGuildid(Long guildid) {
         this.guildid = guildid;
     }
 
