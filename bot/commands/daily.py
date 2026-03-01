@@ -16,7 +16,9 @@ class Daily(commands.Cog):
 
     @tasks.loop(minutes=1)
     async def daily_poem(self):
-        guilds = await get(f"guilds/with-poems")
+        guilds = await get(
+            f"guilds/with-poems", headers={"Bot-User-Id": str(self.bot.user.id)}
+        )
         if not guilds:
             return
         for guild in guilds:

@@ -34,34 +34,6 @@ You'd use the @Query annotation with JPQL or native SQL in your repositories.
     - Verify Retry-After header is correct
 
 
-3. DISCORD COMMAND COOLDOWNS
-----------------------------
-Add @app_commands.checks.cooldown() to slash commands.
-Example: @app_commands.checks.cooldown(1, 30.0)  # 1 use per 30 seconds per user
-
-[ ] Add cooldown to /upload - prevent spam uploads
-[ ] Add cooldown to /gallery - prevent excessive gallery fetches
-[ ] Add cooldown to /poem - prevent spamming poem requests
-[ ] Add cooldown to /art - prevent spamming art requests
-[ ] Add error handler for CommandOnCooldown - show users how long to wait
-
-
-4. CACHING GALLERY RESPONSES
------------------------------
-Instead of hitting the database every time someone opens the gallery,
-cache the results in memory for a short period.
-
-[ ] Backend side
-    - Enable Spring's @Cacheable on the gallery endpoint
-    - Repeated requests within a time window return cached data
-      instead of querying Postgres
-[ ] Bot side
-    - Store gallery results in a dictionary keyed by guild ID with a TTL
-      (e.g. 60 seconds)
-    - Multiple users opening the gallery in the same server share one API call
-[ ] Cache invalidation
-    - Invalidate cache when someone uploads or votes so data stays fresh
-
 
 5. JAVA BACKEND TESTS
 ----------------------

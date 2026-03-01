@@ -39,8 +39,6 @@ class MyBot(commands.Bot):
 
     async def on_ready(self):
         print(f"Logged in as {self.user} (ID: {self.user.id})")
-
-        print(f"Logged in as {self.user} (ID: {self.user.id})")
         try:
             # old_guild = discord.Object(id=)
             # self.tree.clear_commands(guild=old_guild)

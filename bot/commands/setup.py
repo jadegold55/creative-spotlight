@@ -68,6 +68,10 @@ class Setup(commands.Cog):
                 "minute": minute,
                 "timezone": timezone.value,
             },
+            headers={
+                "X-User-Id": str(interaction.user.id),
+                "X-Command": "SubCommandSetupPoems",
+            },
         )
         if status != 200:
             await interaction.response.send_message(
@@ -115,6 +119,10 @@ class Setup(commands.Cog):
                 "minute": minute,
                 "timezone": timezone.value,
                 "durationDays": duration,
+            },
+            headers={
+                "X-User-Id": str(interaction.user.id),
+                "X-Command": "SubCommandSetupContest",
             },
         )
 

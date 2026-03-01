@@ -19,7 +19,9 @@ class Spotlight(commands.Cog):
 
     @tasks.loop(minutes=1)
     async def check_contest(self):
-        guilds = await get(f"guilds/with-spotlight")
+        guilds = await get(
+            f"guilds/with-spotlight", headers={"Bot-User-Id": str(self.bot.user.id)}
+        )
         if not guilds:
             return
         now_utc = datetime.now(pytz.utc)
@@ -73,7 +75,9 @@ class Spotlight(commands.Cog):
             return
 
         winner = await get(
-            "/images/contest/winner", params={"guildid": guild["guildId"]}
+            "/images/contest/winner",
+            params={"guildid": guild["guildId"]},
+            headers={"Bot-User-Id": str(self.bot.user.id)},
         )
         if not winner:
             await channel.send(
