@@ -69,6 +69,10 @@ class MyBot(commands.Bot):
             )
             await interaction.response.send_message(embed=embed, ephemeral=True)
             print(f"Error in command {interaction.command.name}: {error}")
+        if interaction.response.is_done():
+            await interaction.followup.send(embed=embed, ephemeral=True)
+        else:
+            await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 client = MyBot()

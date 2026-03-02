@@ -38,6 +38,7 @@ services:
       - chnl_id=${chnl_id}
       - PYTHONPATH=/app
       - BACKEND_URL=http://backend:8080
+      - PUBLIC_URL=${PUBLIC_URL}
 
 volumes:
   postgres_data:

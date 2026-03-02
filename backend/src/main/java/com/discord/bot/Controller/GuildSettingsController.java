@@ -97,4 +97,28 @@ public class GuildSettingsController {
     public List<GuildSettings> getGuildsWithPoems() {
         return guildSettingsRepo.findByPoemChannelIdIsNotNull();
     }
+
+    @DeleteMapping("/{guildId}/setup-poems")
+    public void deletePoemsSetup(@PathVariable Long guildId) {
+        GuildSettings settings = guildSettingsRepo.findById(guildId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guild not configured"));
+        settings.setPoemChannelId(null);
+        settings.setPoemHour(null);
+        settings.setPoemMinute(null);
+        settings.setPoemTimezone(null);
+        guildSettingsRepo.save(settings);
+    }
+
+    @DeleteMapping("/{guildId}/setup-contest")
+    public void deleteContestSetup(@PathVariable Long guildId) {
+        GuildSettings settings = guildSettingsRepo.findById(guildId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guild not configured"));
+        settings.setSpotlightChannelId(null);
+        settings.setContestDay(null);
+        settings.setContestHour(null);
+        settings.setContestMinute(null);
+        settings.setContestTimezone(null);
+        settings.setContestDurationDays(null);
+        guildSettingsRepo.save(settings);
+    }
 }

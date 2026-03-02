@@ -36,12 +36,12 @@ public class GalleryImageController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found with id " + id));
     }
 
+    // ===== GET Endpoints =====
     @GetMapping("/{id}")
     public GalleryImage getImage(@PathVariable Long id) {
         return getImageOrThrow(id);
     }
 
-    // @GetMapping("random")
     @GetMapping("/{id}/file")
     public ResponseEntity<byte[]> getImageFile(@PathVariable Long id) {
         GalleryImage image = getImageOrThrow(id);
@@ -50,36 +50,15 @@ public class GalleryImageController {
                 .body(image.getImageData());
     }
 
-    @PostMapping("/add")
-    public GalleryImage addImage(@RequestParam("file") MultipartFile file, @RequestParam Long uploaderid,
-            @RequestParam Long guildid) {
-        try {
-            GalleryImage image = new GalleryImage(file.getContentType(), file.getBytes(), uploaderid, guildid);
-            return galleryImageRepo.save(image);
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to read image file", e);
-        }
-    }
-
     @GetMapping("/{id}/votes")
     public Long getVotes(@PathVariable Long id) {
         return galleryImageVoteService.getVoteCount(getImageOrThrow(id));
     }
 
-    @PostMapping("/{id}/vote")
-    public void vote(@PathVariable Long id, @RequestParam Long userID) {
-        galleryImageVoteService.addVote(userID, getImageOrThrow(id));
-    }
-
-    @DeleteMapping("/{id}")
-    public void deleteImage(@PathVariable Long id) {
-        galleryImageRepo.delete(getImageOrThrow(id));
-    }
-
     @GetMapping("/all")
-    public List<GalleryImage> getAllImages(@RequestParam(required = false) Long guildid) {
+    public List<?> getAllImages(@RequestParam(required = false) Long guildid) {
         if (guildid != null) {
-            return galleryImageRepo.findByGuildid(guildid);
+            return galleryImageRepo.findByGuildidWithVotes(guildid);
         }
         return galleryImageRepo.findAll();
     }
@@ -91,4 +70,35 @@ public class GalleryImageController {
         return new ContestWinner(winner.getId(), winner.getuploaderID(),
                 galleryImageVoteService.getVoteCount(winner));
     }
+
+    @GetMapping("/user/{uploaderid}")
+    public List<GalleryImage> getImagesByUploader(@PathVariable Long uploaderid, @RequestParam Long guildid) {
+
+        return galleryImageRepo.findByUploaderIDAndGuildid(uploaderid, guildid);
+    }
+
+    // ===== POST Endpoints =====
+    @PostMapping("/add")
+    public GalleryImage addImage(@RequestParam("file") MultipartFile file, @RequestParam Long uploaderid,
+            @RequestParam Long guildid, @RequestParam(required = false) String title) {
+        try {
+            GalleryImage image = new GalleryImage(file.getContentType(), file.getBytes(), uploaderid, guildid);
+            image.setTitle(title != null ? title : "Untitled");
+            return galleryImageRepo.save(image);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to read image file", e);
+        }
+    }
+
+    @PostMapping("/{id}/vote")
+    public void vote(@PathVariable Long id, @RequestParam Long userID) {
+        galleryImageVoteService.addVote(userID, getImageOrThrow(id));
+    }
+
+    // ===== DELETE Endpoints =====
+    @DeleteMapping("/{id}")
+    public void deleteImage(@PathVariable Long id) {
+        galleryImageRepo.delete(getImageOrThrow(id));
+    }
+
 }

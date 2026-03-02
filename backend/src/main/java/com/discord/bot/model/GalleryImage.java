@@ -25,6 +25,7 @@ public class GalleryImage {
     private Long guildid;
     private LocalDateTime uploadedAt;
     private String contentType;
+    private String title;
     @JsonIgnore
     @Column(columnDefinition = "bytea")
     private byte[] imageData;
@@ -47,6 +48,14 @@ public class GalleryImage {
 
     public Long getGuildid() {
         return guildid;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public Long getId() {

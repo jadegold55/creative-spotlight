@@ -8,7 +8,7 @@ from discord.ui import Button, View
 
 from discord.ext import commands
 import requests
-from bot.apihelper.api import post, get
+from bot.apihelper.api import delete, post, get
 
 from bot.config import PUBLIC_URL
 
@@ -39,12 +39,6 @@ class GalleryViewer(View):
         self.current_image_index = (self.current_image_index - 1) % len(self.images)
         await self.update_image(interaction)
 
-    # next pic
-    @discord.ui.button(label="Next", style=discord.ButtonStyle.primary)
-    async def next(self, interaction: discord.Interaction, button: Button):
-        self.current_image_index = (self.current_image_index + 1) % len(self.images)
-        await self.update_image(interaction)
-
     # do u like the image or not
     @discord.ui.button(label="❤️", style=discord.ButtonStyle.success)
     async def love(self, interaction: discord.Interaction, button: Button):
@@ -66,29 +60,27 @@ class GalleryViewer(View):
             )
             return
         await interaction.response.send_message("Thanks for voting!", ephemeral=True)
-        vote_count = await get(
-            f"images/{image['id']}/votes",
-            headers={
-                "Bot-User-Id": str(interaction.client.user.id),
-                "Bot-User-Name": str(interaction.client.user.name),
-            },
+        image["voteCount"] = image.get("voteCount", 0) + 1
+        await self.update_image(
+            interaction, edit_only=True, vote_count=image["voteCount"]
         )
-        await self.update_image(interaction, edit_only=True, vote_count=vote_count)
+
+    @discord.ui.button(label="Next", style=discord.ButtonStyle.primary)
+    async def next(self, interaction: discord.Interaction, button: Button):
+        self.current_image_index = (self.current_image_index + 1) % len(self.images)
+        await self.update_image(interaction)
 
     async def update_image(
         self, interaction: discord.Interaction, edit_only=False, vote_count=None
     ):
         image = self.images[self.current_image_index]
         if vote_count is None:
-            vote_count = await get(
-                f"images/{image['id']}/votes",
-                headers={
-                    "Bot-User-Id": str(interaction.client.user.id),
-                    "Bot-User-Name": str(interaction.client.user.name),
-                },
-            )
-        embed = discord.Embed(title="Gallery Viewer")
+            vote_count = image.get("voteCount", 0)
+        embed = discord.Embed(
+            title="Title", description=f"*{image.get('title') or 'Untitled'}*"
+        )
         embed.set_image(url=f"{PUBLIC_URL}/images/{image['id']}/file")
+
         embed.set_footer(text=f"Votes: {vote_count if vote_count is not None else 0}")
         if edit_only:
             await interaction.edit_original_response(embed=embed, view=self)
@@ -111,7 +103,7 @@ class Gallery(commands.Cog):
             headers={
                 "X-User-Id": str(interaction.user.id),
                 "X-User-Name": str(interaction.user.name),
-                "Command": "gallery",
+                "X-Command": "gallery",
             },
         )
         if not images:
@@ -120,21 +112,13 @@ class Gallery(commands.Cog):
                 ephemeral=True,
             )
             return
-        for img in images:
-            img["votes"] = set()  # Convert votes to a set for easy management
         first_image = images[0]
-        # the header for the next two requests should be bot
-        vote_count = await get(
-            f"images/{first_image['id']}/votes",
-            headers={
-                "Bot-User-Id": str(self.bot.user.id),
-                "Bot-User-Name": str(self.bot.user.name),
-            },
-        )
         view = GalleryViewer(images, user_id=interaction.user.id)
-        embed = discord.Embed(title="Gallery Viewer")
+        embed = discord.Embed(
+            title="Title", description=f"*{first_image.get('title') or 'Untitled'}*"
+        )
         embed.set_image(url=f"{PUBLIC_URL}/images/{first_image['id']}/file")
-        embed.set_footer(text=f"Votes: {vote_count}")
+        embed.set_footer(text=f"Votes: {first_image.get('voteCount', 0)}")
         # time based event. invoked by bot iself every week.
         # users submit their images then the veent lasts like a weekend or something``
 
@@ -145,11 +129,12 @@ class Gallery(commands.Cog):
 
     @app_commands.checks.cooldown(1, 30.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.command(name="upload", description="Upload an image to the gallery")
-    @app_commands.describe(file="Attach an image file")
+    @app_commands.describe(file="Attach an image file", title="Title of your Art!")
     async def upload(
         self,
         interaction: discord.Interaction,
-        file: discord.Attachment = None,
+        title: str,
+        file: discord.Attachment,
     ):
         await interaction.response.defer(thinking=True, ephemeral=True)
 
@@ -172,11 +157,13 @@ class Gallery(commands.Cog):
         )
         form.add_field("uploaderid", str(interaction.user.id))
         form.add_field("guildid", str(interaction.guild.id))
+        form.add_field("title", title)
         status, resp = await post(
             f"images/add",
             headers={
                 "X-User-Id": str(interaction.user.id),
                 "X-User-Name": str(interaction.user.name),
+                "X-Command": "upload",
             },
             data=form,
         )
@@ -187,6 +174,62 @@ class Gallery(commands.Cog):
             return
         await interaction.followup.send(
             "Your image has been added to the gallery!", ephemeral=True
+        )
+
+    @app_commands.checks.cooldown(1, 30.0, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.command(name="delete", description="Delete an image from the gallery")
+    async def delete(
+        self,
+        interaction: discord.Interaction,
+    ):
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        images = await get(
+            f"images/user/{interaction.user.id}",
+            params={"guildid": interaction.guild.id},
+            headers={"X-User-Id": str(interaction.user.id)},
+        )
+
+        if not images:
+            await interaction.followup.send(
+                "You have no submissions to delete.", ephemeral=True
+            )
+            return
+
+        options = [
+            discord.SelectOption(
+                label=img.get("title") or "Untitled", value=str(img["id"])
+            )
+            for img in images[:25]
+        ]
+
+        view = DeleteView(options)
+        await interaction.followup.send(
+            "Select a submission to delete:", view=view, ephemeral=True
+        )
+
+
+class DeleteView(View):
+    def __init__(self, options):
+        super().__init__(timeout=60)
+        select = discord.ui.Select(placeholder="Choose a submission", options=options)
+        select.callback = self.on_select
+        self.add_item(select)
+
+    async def on_select(self, interaction):
+        image_id = interaction.data["values"][0]
+        status, text = await delete(
+            f"images/{image_id}",
+            headers={"X-User-Id": str(interaction.user.id)},
+        )
+
+        if status != 200:
+            await interaction.response.edit_message(
+                content="Failed to delete.", view=None
+            )
+            return
+
+        await interaction.response.edit_message(
+            content="Submission deleted!", view=None
         )
 
 
