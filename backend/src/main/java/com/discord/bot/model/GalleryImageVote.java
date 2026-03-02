@@ -1,5 +1,8 @@
 package com.discord.bot.model;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OnetoMany;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
@@ -19,6 +22,7 @@ public class GalleryImageVote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
+    @JoinColumn(name = "gallery_image_id")
     private GalleryImage galleryImage;
     private Long userID;
 
