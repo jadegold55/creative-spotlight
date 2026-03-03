@@ -1,50 +1,41 @@
 package com.discord.bot.Controller;
 
-import org.springframework.web.bind.annotation.RestController;
-import com.discord.bot.Repository.GalleryImageRepo;
-import com.discord.bot.Repository.GalleryImageVoteRepo;
-import com.discord.bot.Service.GalleryImageVoteService;
+import com.discord.bot.Service.GalleryImageService;
+import com.discord.bot.dto.GalleryImageResponse;
 import com.discord.bot.model.ContestWinner;
-import com.discord.bot.model.GalleryImage;
+import jakarta.validation.constraints.NotNull;
+import java.net.URI;
 import java.util.List;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.ResponseEntity;
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/images")
+@Validated
 public class GalleryImageController {
 
-    private final GalleryImageRepo galleryImageRepo;
-    private final GalleryImageVoteService galleryImageVoteService;
+    private final GalleryImageService galleryImageService;
 
-    public GalleryImageController(GalleryImageRepo galleryImageRepo, GalleryImageVoteService galleryImageVoteService) {
-        this.galleryImageRepo = galleryImageRepo;
-        this.galleryImageVoteService = galleryImageVoteService;
+    public GalleryImageController(GalleryImageService galleryImageService) {
+        this.galleryImageService = galleryImageService;
     }
 
-    private GalleryImage getImageOrThrow(Long id) {
-        return galleryImageRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found with id " + id));
-    }
-
-    // ===== GET Endpoints =====
     @GetMapping("/{id}")
-    public GalleryImage getImage(@PathVariable Long id) {
-        return getImageOrThrow(id);
+    public GalleryImageResponse getImage(@PathVariable Long id) {
+        return galleryImageService.getImage(id);
     }
 
     @GetMapping("/{id}/file")
     public ResponseEntity<byte[]> getImageFile(@PathVariable Long id) {
-        GalleryImage image = getImageOrThrow(id);
+        var image = galleryImageService.getImageOrThrow(id);
         return ResponseEntity.ok()
                 .header("Content-Type", image.getContentType())
                 .body(image.getImageData());
@@ -52,53 +43,44 @@ public class GalleryImageController {
 
     @GetMapping("/{id}/votes")
     public Long getVotes(@PathVariable Long id) {
-        return galleryImageVoteService.getVoteCount(getImageOrThrow(id));
+        return galleryImageService.getImage(id).voteCount();
     }
 
     @GetMapping("/all")
-    public List<?> getAllImages(@RequestParam(required = false) Long guildid) {
-        if (guildid != null) {
-            return galleryImageRepo.findByGuildidWithVotes(guildid);
-        }
-        return galleryImageRepo.findAll();
+    public List<GalleryImageResponse> getAllImages(@RequestParam Long guildid) {
+        return galleryImageService.getAllImages(guildid);
     }
 
     @GetMapping("/contest/winner")
     public ContestWinner getContestWinner(@RequestParam Long guildid) {
-        GalleryImage winner = galleryImageVoteService.getWinningImage(guildid)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No contest winner found"));
-        return new ContestWinner(winner.getId(), winner.getuploaderID(),
-                galleryImageVoteService.getVoteCount(winner));
+        return galleryImageService.getContestWinner(guildid);
     }
 
     @GetMapping("/user/{uploaderid}")
-    public List<GalleryImage> getImagesByUploader(@PathVariable Long uploaderid, @RequestParam Long guildid) {
-
-        return galleryImageRepo.findByUploaderIDAndGuildid(uploaderid, guildid);
+    public List<GalleryImageResponse> getImagesByUploader(@PathVariable Long uploaderid, @RequestParam Long guildid) {
+        return galleryImageService.getImagesByUploader(uploaderid, guildid);
     }
 
-    // ===== POST Endpoints =====
     @PostMapping("/add")
-    public GalleryImage addImage(@RequestParam("file") MultipartFile file, @RequestParam Long uploaderid,
-            @RequestParam Long guildid, @RequestParam(required = false) String title) {
-        try {
-            GalleryImage image = new GalleryImage(file.getContentType(), file.getBytes(), uploaderid, guildid);
-            image.setTitle(title != null ? title : "Untitled");
-            return galleryImageRepo.save(image);
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to read image file", e);
-        }
+    public ResponseEntity<GalleryImageResponse> addImage(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam @NotNull Long uploaderid,
+            @RequestParam @NotNull Long guildid,
+            @RequestParam(required = false) String title) {
+        GalleryImageResponse created = galleryImageService.addImage(file, uploaderid, guildid, title);
+        return ResponseEntity.created(URI.create("/images/" + created.id())).body(created);
     }
 
     @PostMapping("/{id}/vote")
-    public void vote(@PathVariable Long id, @RequestParam Long userID) {
-        galleryImageVoteService.addVote(userID, getImageOrThrow(id));
+    public ResponseEntity<Void> vote(@PathVariable Long id, @RequestParam @NotNull Long userID) {
+        galleryImageService.vote(id, userID);
+        return ResponseEntity.accepted().build();
     }
 
-    // ===== DELETE Endpoints =====
     @DeleteMapping("/{id}")
-    public void deleteImage(@PathVariable Long id) {
-        galleryImageRepo.delete(getImageOrThrow(id));
+    public ResponseEntity<Void> deleteImage(@PathVariable Long id) {
+        galleryImageService.deleteImage(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

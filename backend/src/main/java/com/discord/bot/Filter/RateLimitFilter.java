@@ -75,7 +75,7 @@ public class RateLimitFilter implements jakarta.servlet.Filter {
     }
 
     public Bucket createBucket() {
-        Bandwidth limit = Bandwidth.classic(30, Refill.greedy(30, Duration.ofMinutes(1)));
+        Bandwidth limit = Bandwidth.classic(80, Refill.greedy(80, Duration.ofMinutes(1)));
         return Bucket.builder()
                 .addLimit(limit)
                 .build();

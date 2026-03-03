@@ -1,0 +1,80 @@
+package com.discord.bot.Service;
+
+import com.discord.bot.Repository.GalleryImageRepo;
+import com.discord.bot.dto.GalleryImageResponse;
+import com.discord.bot.model.ContestWinner;
+import com.discord.bot.model.GalleryImage;
+import java.io.IOException;
+import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
+@Service
+public class GalleryImageService {
+    private final GalleryImageRepo galleryImageRepo;
+    private final GalleryImageVoteService galleryImageVoteService;
+
+    public GalleryImageService(GalleryImageRepo galleryImageRepo, GalleryImageVoteService galleryImageVoteService) {
+        this.galleryImageRepo = galleryImageRepo;
+        this.galleryImageVoteService = galleryImageVoteService;
+    }
+
+    public GalleryImageResponse getImage(Long id) {
+        GalleryImage image = getImageOrThrow(id);
+        return toResponse(image, galleryImageVoteService.getVoteCount(image));
+    }
+
+    public List<GalleryImageResponse> getAllImages(Long guildId) {
+        return galleryImageRepo.findByGuildidWithVotes(guildId);
+    }
+
+    public ContestWinner getContestWinner(Long guildId) {
+        GalleryImage winner = galleryImageVoteService.getWinningImage(guildId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No contest winner found"));
+        return new ContestWinner(winner.getId(), winner.getuploaderID(), galleryImageVoteService.getVoteCount(winner));
+    }
+
+    public List<GalleryImageResponse> getImagesByUploader(Long uploaderId, Long guildId) {
+        return galleryImageRepo.findByUploaderIDAndGuildid(uploaderId, guildId)
+                .stream()
+                .map(image -> toResponse(image, galleryImageVoteService.getVoteCount(image)))
+                .toList();
+    }
+
+    public GalleryImageResponse addImage(MultipartFile file, Long uploaderId, Long guildId, String title) {
+        try {
+            GalleryImage image = new GalleryImage(file.getContentType(), file.getBytes(), uploaderId, guildId);
+            image.setTitle(title != null ? title : "Untitled");
+            GalleryImage saved = galleryImageRepo.save(image);
+            return toResponse(saved, 0L);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to read image file", e);
+        }
+    }
+
+    public void vote(Long id, Long userId) {
+        galleryImageVoteService.addVote(userId, getImageOrThrow(id));
+    }
+
+    public void deleteImage(Long id) {
+        galleryImageRepo.delete(getImageOrThrow(id));
+    }
+
+    public GalleryImage getImageOrThrow(Long id) {
+        return galleryImageRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found with id " + id));
+    }
+
+    private GalleryImageResponse toResponse(GalleryImage image, Long voteCount) {
+        return new GalleryImageResponse(
+                image.getId(),
+                image.getuploaderID(),
+                image.getGuildid(),
+                image.getTitle(),
+                image.getContentType(),
+                image.getUploadedAt(),
+                voteCount);
+    }
+}

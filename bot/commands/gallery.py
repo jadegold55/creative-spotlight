@@ -167,7 +167,7 @@ class Gallery(commands.Cog):
             },
             data=form,
         )
-        if status != 200:
+        if status != 201:
             await interaction.followup.send(
                 f"Failed to upload: {status}", ephemeral=True
             )
@@ -222,7 +222,7 @@ class DeleteView(View):
             headers={"X-User-Id": str(interaction.user.id)},
         )
 
-        if status != 200:
+        if status != 204:
             await interaction.response.edit_message(
                 content="Failed to delete.", view=None
             )

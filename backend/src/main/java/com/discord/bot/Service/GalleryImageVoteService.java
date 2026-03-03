@@ -6,10 +6,7 @@ import com.discord.bot.Exceptions.InvalidVote;
 import com.discord.bot.Repository.GalleryImageVoteRepo;
 import com.discord.bot.model.GalleryImage;
 import com.discord.bot.model.GalleryImageVote;
-import java.util.Optional;
-import javax.lang.model.type.NullType;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 
 @Service
 public class GalleryImageVoteService {
@@ -31,6 +28,6 @@ public class GalleryImageVoteService {
     }
 
     public Optional<GalleryImage> getWinningImage(Long guildID) {
-        return galleryVoteRepo.findWinningImageByGuild(guildID);
+        return galleryVoteRepo.findWinningImagesByGuild(guildID, PageRequest.of(0, 1)).stream().findFirst();
     }
 }
