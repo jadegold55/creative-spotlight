@@ -12,7 +12,7 @@ def scrapeArt():
         response.raise_for_status()
         data = response.json()
         artwork = data["data"][0]
-        print(f"image id: {artwork.get('image_id')}")
+        logging.info(f"image id: {artwork.get('image_id')}")
         return {
             "title": artwork.get("title", "Unknown Title"),
             "artist": artwork.get("artist_display", "Unknown Artist"),
@@ -24,5 +24,5 @@ def scrapeArt():
             ),
         }
     except Exception as e:
-        print(f"Error fetching artwork: {e}")
+        logging.error(f"Error fetching artwork: {e}")
         return None

@@ -1,10 +1,16 @@
+import asyncio
+import logging
+
 import discord
 from discord import app_commands
-
 from discord.ext import commands
 
+from bot.scraping.randompoem import scrape
 
-class poetry(commands.Cog):
+log = logging.getLogger(__name__)
+
+
+class Poetry(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -14,9 +20,7 @@ class poetry(commands.Cog):
     async def poem(
         self, interaction: discord.Interaction, author: str = None, title: str = None
     ):
-        from scraping.randompoem import scrape
-
-        poem_data = scrape(author=author, title=title)
+        poem_data = await asyncio.to_thread(scrape, author=author, title=title)
         if not poem_data:
             await interaction.response.send_message(
                 "Sorry, I couldn't fetch a poem at the moment.", ephemeral=True
@@ -41,4 +45,4 @@ class poetry(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(poetry(bot))
+    await bot.add_cog(Poetry(bot))
