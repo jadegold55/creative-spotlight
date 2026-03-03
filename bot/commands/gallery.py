@@ -43,9 +43,7 @@ class GalleryViewer(LayoutView):
         total_votes = sum(img.get("voteCount", 0) for img in post_images)
 
         # text header
-        self.add_item(
-            discord.ui.TextDisplay(content=f"**{title}**\nVotes: {total_votes}")
-        )
+        text = discord.ui.TextDisplay(content=f"**{title}**\nVotes: {total_votes}")
 
         # media gallery (works for 1 or more images)
         gallery_items = [
@@ -55,7 +53,7 @@ class GalleryViewer(LayoutView):
             )
             for img in post_images
         ]
-        self.add_item(discord.ui.MediaGallery(*gallery_items))
+        gallery = discord.ui.MediaGallery(*gallery_items)
 
         # navigation and vote buttons in an action row
         nav_disabled = len(self.posts) <= 1
@@ -74,7 +72,15 @@ class GalleryViewer(LayoutView):
         next_btn.callback = self._on_next
 
         row = discord.ui.ActionRow(prev_btn, vote_btn, next_btn)
-        self.add_item(row)
+
+        # wrap everything in a Container (embed-like card with accent color)
+        container = discord.ui.Container(
+            text,
+            gallery,
+            row,
+            accent_colour=discord.Colour.blurple(),
+        )
+        self.add_item(container)
 
     async def _on_previous(self, interaction: discord.Interaction):
         self.current_post_index = (self.current_post_index - 1) % len(self.posts)
