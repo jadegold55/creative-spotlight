@@ -40,10 +40,20 @@ class GalleryViewer(LayoutView):
         self.clear_items()
         post_images = self.posts[self.current_post_index]
         title = post_images[0].get("title") or "Untitled"
+        uploader_id = post_images[0].get("uploaderId")
         total_votes = sum(img.get("voteCount", 0) for img in post_images)
 
-        # text header
-        text = discord.ui.TextDisplay(content=f"**{title}**\nVotes: {total_votes}")
+        # text header above the container
+        mention = f"<@{uploader_id}>" if uploader_id else "Unknown"
+        self.add_item(
+            discord.ui.TextDisplay(
+                content=(
+                    f"**Title:** {title}\n"
+                    f"**Made by:** {mention}\n"
+                    f"**Votes:** {total_votes}"
+                )
+            )
+        )
 
         # media gallery (works for 1 or more images)
         gallery_items = [
@@ -73,9 +83,8 @@ class GalleryViewer(LayoutView):
 
         row = discord.ui.ActionRow(prev_btn, vote_btn, next_btn)
 
-        # wrap everything in a Container (embed-like card with accent color)
+        # container with gallery and buttons
         container = discord.ui.Container(
-            text,
             gallery,
             row,
             accent_colour=discord.Colour.blurple(),
