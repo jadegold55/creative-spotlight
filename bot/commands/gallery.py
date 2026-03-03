@@ -133,7 +133,7 @@ class Gallery(commands.Cog):
     @app_commands.command(name="gallery", description="View the image gallery")
     async def gallery(self, interaction: discord.Interaction):
         logger = logging.getLogger("gallery_command")
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
         images = await get(
             "images/all",
             params={"guildid": interaction.guild.id},
@@ -156,6 +156,7 @@ class Gallery(commands.Cog):
         try:
             await interaction.followup.send(
                 view=view,
+                ephemeral=True,
             )
         except Exception as e:
             logger.error(f"Error sending gallery: {e}")
