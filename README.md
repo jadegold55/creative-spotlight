@@ -7,13 +7,12 @@ It includes:
 - A **Spring Boot backend** for gallery, voting, and guild configuration persistence.
 - A **PostgreSQL database** for reliable data storage.
 
-## Why communities use Creative Spotlight
+## Why Creative Spotlight? 
 
-Creative Spotlight helps new and growing servers:
+Creative Spotlight helps new and growing artists:
 - spark daily conversation with low-friction creative prompts,
-- showcase member work in a shared gallery,
-- run recurring spotlight contests without manual moderation overhead,
-- keep engagement fresh with random museum art and poetry.
+- showcase work in a shared gallery,
+- enter in weekly contests to get showcased and stand out,
 
 ## Feature highlights
 
