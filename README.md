@@ -64,7 +64,7 @@ Admins can remove gallery submissions directly through an in-app selection flow.
 ### Delete submission flow (`/delete`)
 ![Delete dropdown used to remove a submission from the gallery](docs/images/delete-submission.png)
 
-> Save the screenshot files with the exact names above inside `docs/images/` so they render automatically on GitHub.
+
 
 ## Slash commands at a glance
 
