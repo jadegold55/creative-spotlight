@@ -5,7 +5,9 @@ import com.discord.bot.dto.GalleryImageResponse;
 import com.discord.bot.model.ContestWinner;
 import com.discord.bot.model.GalleryImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,6 +56,24 @@ public class GalleryImageService {
         }
     }
 
+    public List<GalleryImageResponse> addImages(List<MultipartFile> files, Long uploaderId, Long guildId,
+            String title) {
+        String groupId = UUID.randomUUID().toString();
+        List<GalleryImageResponse> responses = new ArrayList<>();
+        for (MultipartFile file : files) {
+            try {
+                GalleryImage image = new GalleryImage(file.getContentType(), file.getBytes(), uploaderId, guildId,
+                        groupId);
+                image.setTitle(title != null ? title : "Untitled");
+                GalleryImage saved = galleryImageRepo.save(image);
+                responses.add(toResponse(saved, 0L));
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to read image file", e);
+            }
+        }
+        return responses;
+    }
+
     public void vote(Long id, Long userId) {
         galleryImageVoteService.addVote(userId, getImageOrThrow(id));
     }
@@ -75,6 +95,7 @@ public class GalleryImageService {
                 image.getTitle(),
                 image.getContentType(),
                 image.getUploadedAt(),
-                voteCount);
+                voteCount,
+                image.getGroupId());
     }
 }

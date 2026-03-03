@@ -10,10 +10,10 @@ import org.springframework.data.jpa.repository.Query;
 public interface GalleryImageRepo extends JpaRepository<GalleryImage, Long> {
     List<GalleryImage> findByGuildid(Long guildid);
 
-    @Query("SELECT new com.discord.bot.dto.GalleryImageResponse(i.id, i.uploaderID, i.guildid, i.title, i.contentType, i.uploadedAt,  COUNT(v)) "
+    @Query("SELECT new com.discord.bot.dto.GalleryImageResponse(i.id, i.uploaderID, i.guildid, i.title, i.contentType, i.uploadedAt, COUNT(v), i.groupId) "
             +
             "FROM GalleryImage i LEFT JOIN GalleryImageVote v ON v.galleryImage = i " +
-            "WHERE i.guildid = :guildid GROUP BY i.id, i.uploaderID, i.guildid, i.title,i.contentType, i.uploadedAt")
+            "WHERE i.guildid = :guildid GROUP BY i.id, i.uploaderID, i.guildid, i.title, i.contentType, i.uploadedAt, i.groupId")
     List<GalleryImageResponse> findByGuildidWithVotes(@Param("guildid") Long guildid);
 
     List<GalleryImage> findByUploaderIDAndGuildid(Long uploaderID, Long guildid);

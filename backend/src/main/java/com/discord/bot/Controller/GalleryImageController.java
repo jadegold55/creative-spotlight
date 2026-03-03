@@ -6,6 +6,7 @@ import com.discord.bot.model.ContestWinner;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -69,6 +70,16 @@ public class GalleryImageController {
             @RequestParam(required = false) String title) {
         GalleryImageResponse created = galleryImageService.addImage(file, uploaderid, guildid, title);
         return ResponseEntity.created(URI.create("/images/" + created.id())).body(created);
+    }
+
+    @PostMapping("/add-multiple")
+    public ResponseEntity<List<GalleryImageResponse>> addImages(
+            @RequestParam("files") List<MultipartFile> files,
+            @RequestParam @NotNull Long uploaderid,
+            @RequestParam @NotNull Long guildid,
+            @RequestParam(required = false) String title) {
+        List<GalleryImageResponse> created = galleryImageService.addImages(files, uploaderid, guildid, title);
+        return ResponseEntity.created(URI.create("/images/group/" + created.get(0).groupId())).body(created);
     }
 
     @PostMapping("/{id}/vote")

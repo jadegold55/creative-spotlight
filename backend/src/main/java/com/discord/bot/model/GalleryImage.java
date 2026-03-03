@@ -2,6 +2,7 @@ package com.discord.bot.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
@@ -29,6 +30,8 @@ public class GalleryImage {
     private LocalDateTime uploadedAt;
     private String contentType;
     private String title;
+    @Column(name = "group_id")
+    private String groupId;
     @JsonIgnore
     @Column(columnDefinition = "bytea")
     private byte[] imageData;
@@ -44,6 +47,16 @@ public class GalleryImage {
         this.imageData = imageData;
         this.uploaderID = uploaderID;
         this.guildid = guildid;
+        this.groupId = UUID.randomUUID().toString();
+        this.uploadedAt = LocalDateTime.now();
+    }
+
+    public GalleryImage(String contentType, byte[] imageData, Long uploaderID, Long guildid, String groupId) {
+        this.contentType = contentType;
+        this.imageData = imageData;
+        this.uploaderID = uploaderID;
+        this.guildid = guildid;
+        this.groupId = groupId;
         this.uploadedAt = LocalDateTime.now();
     }
 
@@ -101,5 +114,13 @@ public class GalleryImage {
 
     public void setUploadedAt(LocalDateTime uploadedAt) {
         this.uploadedAt = uploadedAt;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 }

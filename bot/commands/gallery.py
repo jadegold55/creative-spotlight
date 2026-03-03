@@ -1,54 +1,98 @@
 # Discord and UI imports
 import logging
+from collections import OrderedDict
+
 import aiohttp
 import discord
 from discord import app_commands
-from discord import file
-from discord.ui import Button, View
+from discord.ui import Button, View, LayoutView
 
 from discord.ext import commands
-import requests
 from bot.apihelper.api import delete, post, get
 
 from bot.config import PUBLIC_URL
 
 
-# Set up Discord client and command tree
+def group_images_into_posts(images):
+    """Group a flat list of images by groupId into posts."""
+    posts = OrderedDict()
+    for img in images:
+        gid = img.get("groupId") or str(
+            img["id"]
+        )  # fallback for images without groupId
+        if gid not in posts:
+            posts[gid] = []
+        posts[gid].append(img)
+    return list(posts.values())
 
-# functionality to add:  find database of art pieces and artists,
-# scrape for images and info, add to database, then create commands to pull from the
-# database and display in discord. I can also add a command to allow users to submit their own art
-# pieces to the gallery, which would be a fun way to engage the community and keep the gallery fresh with new content.
-#  I will need to add some error handling and logging to make sure it runs smoothly, especially if i want to run it on a schedule.
 
-
-# view ui for gallery
-class GalleryViewer(View):
-    def __init__(self, images, user_id=None):
+# view ui for gallery — uses Components V2 MediaGallery for multi-image posts
+class GalleryViewer(LayoutView):
+    def __init__(self, posts, user_id=None):
         super().__init__(timeout=None)
-        self.images = images  # List of image dicts
-        self.current_image_index = 0  # Track which image is shown
+        self.posts = posts  # List of posts; each post is a list of image dicts
+        self.current_post_index = 0
         self.user_id = user_id
-        if len(images) <= 1:
-            self.previous.disabled = True
-            self.next.disabled = True  # Optionally track the user viewing
+        self._build_components()
 
-    # go to previous pic
-    @discord.ui.button(label="Previous", style=discord.ButtonStyle.primary)
-    async def previous(self, interaction: discord.Interaction, button: Button):
-        self.current_image_index = (self.current_image_index - 1) % len(self.images)
-        await self.update_image(interaction)
+    def _build_components(self):
+        """Rebuild view components for the current post."""
+        self.clear_items()
+        post_images = self.posts[self.current_post_index]
+        title = post_images[0].get("title") or "Untitled"
+        total_votes = sum(img.get("voteCount", 0) for img in post_images)
 
-    # do u like the image or not
-    @discord.ui.button(label="❤️", style=discord.ButtonStyle.success)
-    async def love(self, interaction: discord.Interaction, button: Button):
-        idx = self.current_image_index
-        image = self.images[idx]
-        user_id = interaction.user.id
+        # text header
+        self.add_item(
+            discord.ui.TextDisplay(content=f"**{title}**\nVotes: {total_votes}")
+        )
+
+        # media gallery (works for 1 or more images)
+        gallery_items = [
+            discord.MediaGalleryItem(
+                media=f"{PUBLIC_URL}/images/{img['id']}/file",
+                description=img.get("title") or "",
+            )
+            for img in post_images
+        ]
+        self.add_item(discord.ui.MediaGallery(*gallery_items))
+
+        # navigation and vote buttons in an action row
+        nav_disabled = len(self.posts) <= 1
+
+        prev_btn = Button(
+            label="◀", style=discord.ButtonStyle.primary, disabled=nav_disabled
+        )
+        prev_btn.callback = self._on_previous
+
+        vote_btn = Button(label="❤️", style=discord.ButtonStyle.success)
+        vote_btn.callback = self._on_vote
+
+        next_btn = Button(
+            label="▶", style=discord.ButtonStyle.primary, disabled=nav_disabled
+        )
+        next_btn.callback = self._on_next
+
+        row = discord.ui.ActionRow(prev_btn, vote_btn, next_btn)
+        self.add_item(row)
+
+    async def _on_previous(self, interaction: discord.Interaction):
+        self.current_post_index = (self.current_post_index - 1) % len(self.posts)
+        self._build_components()
+        await interaction.response.edit_message(view=self)
+
+    async def _on_next(self, interaction: discord.Interaction):
+        self.current_post_index = (self.current_post_index + 1) % len(self.posts)
+        self._build_components()
+        await interaction.response.edit_message(view=self)
+
+    async def _on_vote(self, interaction: discord.Interaction):
+        post_images = self.posts[self.current_post_index]
+        first_image = post_images[0]
 
         status, response = await post(
-            f"images/{image['id']}/vote",
-            params={"userID": user_id},
+            f"images/{first_image['id']}/vote",
+            params={"userID": interaction.user.id},
             headers={
                 "X-User-Id": str(interaction.user.id),
                 "X-User-Name": str(interaction.user.name),
@@ -56,36 +100,14 @@ class GalleryViewer(View):
         )
         if status == 409:
             await interaction.response.send_message(
-                "You've already voted for this image!", ephemeral=True
+                "You've already voted for this post!", ephemeral=True
             )
             return
+
         await interaction.response.send_message("Thanks for voting!", ephemeral=True)
-        image["voteCount"] = image.get("voteCount", 0) + 1
-        await self.update_image(
-            interaction, edit_only=True, vote_count=image["voteCount"]
-        )
-
-    @discord.ui.button(label="Next", style=discord.ButtonStyle.primary)
-    async def next(self, interaction: discord.Interaction, button: Button):
-        self.current_image_index = (self.current_image_index + 1) % len(self.images)
-        await self.update_image(interaction)
-
-    async def update_image(
-        self, interaction: discord.Interaction, edit_only=False, vote_count=None
-    ):
-        image = self.images[self.current_image_index]
-        if vote_count is None:
-            vote_count = image.get("voteCount", 0)
-        embed = discord.Embed(
-            title="Title", description=f"*{image.get('title') or 'Untitled'}*"
-        )
-        embed.set_image(url=f"{PUBLIC_URL}/images/{image['id']}/file")
-
-        embed.set_footer(text=f"Votes: {vote_count if vote_count is not None else 0}")
-        if edit_only:
-            await interaction.edit_original_response(embed=embed, view=self)
-        else:
-            await interaction.response.edit_message(embed=embed, view=self)
+        first_image["voteCount"] = first_image.get("voteCount", 0) + 1
+        self._build_components()
+        await interaction.message.edit(view=self)
 
 
 class Gallery(commands.Cog):
@@ -98,7 +120,7 @@ class Gallery(commands.Cog):
         logger = logging.getLogger("gallery_command")
         await interaction.response.defer(thinking=True)
         images = await get(
-            f"images/all",
+            "images/all",
             params={"guildid": interaction.guild.id},
             headers={
                 "X-User-Id": str(interaction.user.id),
@@ -112,69 +134,93 @@ class Gallery(commands.Cog):
                 ephemeral=True,
             )
             return
-        first_image = images[0]
-        view = GalleryViewer(images, user_id=interaction.user.id)
-        embed = discord.Embed(
-            title="Title", description=f"*{first_image.get('title') or 'Untitled'}*"
-        )
-        embed.set_image(url=f"{PUBLIC_URL}/images/{first_image['id']}/file")
-        embed.set_footer(text=f"Votes: {first_image.get('voteCount', 0)}")
-        # time based event. invoked by bot iself every week.
-        # users submit their images then the veent lasts like a weekend or something``
+
+        posts = group_images_into_posts(images)
+        view = GalleryViewer(posts, user_id=interaction.user.id)
 
         try:
-            await interaction.followup.send(embed=embed, view=view)
+            await interaction.followup.send(
+                view=view,
+            )
         except Exception as e:
             logger.error(f"Error sending gallery: {e}")
 
     @app_commands.checks.cooldown(1, 30.0, key=lambda i: (i.guild_id, i.user.id))
-    @app_commands.command(name="upload", description="Upload an image to the gallery")
-    @app_commands.describe(file="Attach an image file", title="Title of your Art!")
+    @app_commands.command(name="upload", description="Upload image(s) to the gallery")
+    @app_commands.describe(
+        title="Title of your Art!",
+        file="Attach an image file",
+        file2="Optional second image",
+        file3="Optional third image",
+        file4="Optional fourth image",
+    )
     async def upload(
         self,
         interaction: discord.Interaction,
         title: str,
         file: discord.Attachment,
+        file2: discord.Attachment = None,
+        file3: discord.Attachment = None,
+        file4: discord.Attachment = None,
     ):
         await interaction.response.defer(thinking=True, ephemeral=True)
 
-        url = None
-        if file and file.content_type and file.content_type.startswith("image"):
-            url = file.url
+        attachments = [f for f in [file, file2, file3, file4] if f is not None]
 
-        if not url:
-            await interaction.followup.send(
-                "Please provide a valid image URL or attachment.", ephemeral=True
-            )
-            return
+        # validate all are images
+        for att in attachments:
+            if not att.content_type or not att.content_type.startswith("image"):
+                await interaction.followup.send(
+                    f"`{att.filename}` is not a valid image.", ephemeral=True
+                )
+                return
 
+        headers = {
+            "X-User-Id": str(interaction.user.id),
+            "X-User-Name": str(interaction.user.name),
+            "X-Command": "upload",
+        }
+
+        # download all attachments
         async with aiohttp.ClientSession() as session:
-            async with session.get(url) as res:
-                image_bytes = await res.read()
+            file_data = []
+            for att in attachments:
+                async with session.get(att.url) as res:
+                    file_data.append((await res.read(), att.filename, att.content_type))
+
+        # build form and upload (single or multi)
         form = aiohttp.FormData()
-        form.add_field(
-            "file", image_bytes, filename=file.filename, content_type=file.content_type
-        )
+        if len(file_data) == 1:
+            img_bytes, filename, content_type = file_data[0]
+            form.add_field(
+                "file", img_bytes, filename=filename, content_type=content_type
+            )
+            endpoint = "images/add"
+        else:
+            for img_bytes, filename, content_type in file_data:
+                form.add_field(
+                    "files", img_bytes, filename=filename, content_type=content_type
+                )
+            endpoint = "images/add-multiple"
+
         form.add_field("uploaderid", str(interaction.user.id))
         form.add_field("guildid", str(interaction.guild.id))
         form.add_field("title", title)
-        status, resp = await post(
-            f"images/add",
-            headers={
-                "X-User-Id": str(interaction.user.id),
-                "X-User-Name": str(interaction.user.name),
-                "X-Command": "upload",
-            },
-            data=form,
-        )
+        status, resp = await post(endpoint, headers=headers, data=form)
+
         if status != 201:
             await interaction.followup.send(
                 f"Failed to upload: {status}", ephemeral=True
             )
             return
-        await interaction.followup.send(
-            "Your image has been added to the gallery!", ephemeral=True
+
+        count = len(attachments)
+        msg = (
+            "Your image has been added to the gallery!"
+            if count == 1
+            else f"Your {count} images have been added to the gallery!"
         )
+        await interaction.followup.send(msg, ephemeral=True)
 
     @app_commands.checks.cooldown(1, 30.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.command(name="delete", description="Delete an image from the gallery")
