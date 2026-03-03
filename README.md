@@ -1,24 +1,81 @@
 # Creative Spotlight
 
-Creative Spotlight is a Discord community project that blends art sharing, poetry discovery, and weekly spotlight contests.
+Creative Spotlight is a Discord bot ecosystem designed to keep communities active through **art discovery**, **poetry prompts**, and **friendly creative contests**.
 
-The repository includes:
-- A **Python Discord bot** for slash commands, interactive gallery viewing, contests, random art/ poems, and so much more!
-- A **Spring Boot backend** for persisting gallery images and votes.
-- A **PostgreSQL database** for storage.
+It includes:
+- A **Python Discord bot** with slash commands, interactive gallery tools, and scheduling flows.
+- A **Spring Boot backend** for gallery, voting, and guild configuration persistence.
+- A **PostgreSQL database** for reliable data storage.
 
-## Features
+## Why communities use Creative Spotlight
 
-### Discord bot commands
-- `/gallery` — browse uploaded images in an interactive viewer and vote with a ❤️ button.
-- `/upload` — submit an image URL or attachment to the gallery.
-- `/poem` — fetch a random poem (optionally filtered by author/title).
-- `/art'` - fetch a random piece of art from a random mueseum
-- `/setup` - configure the bot to use channels of your choice
+Creative Spotlight helps new and growing servers:
+- spark daily conversation with low-friction creative prompts,
+- showcase member work in a shared gallery,
+- run recurring spotlight contests without manual moderation overhead,
+- keep engagement fresh with random museum art and poetry.
 
-### Weekly spotlight contest
-- A scheduled task announces a weekly art contest in a configured spotlight channel.
-- After 7 days, the bot fetches the winning image from the backend and posts the winner.
+## Feature highlights
+
+### 1) Interactive gallery with voting
+Members can browse submissions in a paginated viewer and vote with a ❤️ button. This makes community favorites easy to discover and celebrate.
+
+### 2) Random art discovery (`/art`)
+The bot can post a random artwork (with metadata) from museum sources, giving members inspiration and discussion starters.
+
+### 3) Poetry discovery (`/poem`)
+The bot fetches poems (including author/title details), great for writing prompts, reflection threads, and themed events.
+
+### 4) Contest automation (`/setup contest`)
+Admins can configure:
+- destination channel,
+- contest day,
+- posting time,
+- timezone,
+- contest duration.
+
+After the configured period (for example, 7 days), the bot announces the winning submission.
+
+### 5) Daily poem scheduling (`/setup poems`)
+Admins can set a dedicated channel and daily posting time for recurring poem drops.
+
+### 6) Moderation tools (`/delete`)
+Admins can remove gallery submissions directly through an in-app selection flow.
+
+## In-app screenshots
+
+### Gallery browser + voting
+![Gallery browser with Previous/Next and vote button](docs/images/gallery-voting.png)
+
+### Random art lookup (`/art`)
+![Random artwork response card with title and museum metadata](docs/images/random-art.png)
+
+### Command menu overview
+![Slash command list showing art, gallery, poem, delete, and setup commands](docs/images/command-list.png)
+
+### Poem response (`/poem`)
+![Poem embed showing title, author, and full poem text](docs/images/poem-response.png)
+
+### Contest scheduling setup (`/setup contest`)
+![Contest setup panel with day, duration, time, and timezone selectors](docs/images/setup-contest.png)
+
+### Daily poem scheduling (`/setup poems`)
+![Poem setup panel with channel and daily time controls](docs/images/setup-poems.png)
+
+### Delete submission flow (`/delete`)
+![Delete dropdown used to remove a submission from the gallery](docs/images/delete-submission.png)
+
+> Save the screenshot files with the exact names above inside `docs/images/` so they render automatically on GitHub.
+
+## Slash commands at a glance
+
+- `/art` — get a random artwork.
+- `/poem` — get a random poem (supports optional author/title filtering).
+- `/gallery` — browse gallery images and vote on favorites.
+- `/delete` — remove an image from the gallery.
+- `/setup contest` — configure spotlight contests.
+- `/setup poems` — configure daily poem posting.
+- `/setup reset` — reset current server configuration.
 
 ## Project structure
 
@@ -44,5 +101,3 @@ The repository includes:
 - PostgreSQL 16+
 
 ### Containerized development
-- Docker
-- Docker Compose
