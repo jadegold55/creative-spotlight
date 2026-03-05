@@ -30,8 +30,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/images/*/file").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
-                .addFilterBefore(rateLimitFilter, org.springframework.web.filter.CorsFilter.class)
-                .addFilterBefore(serviceTokenFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(serviceTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rateLimitFilter, org.springframework.web.filter.CorsFilter.class);
 
         return http.build();
     }
