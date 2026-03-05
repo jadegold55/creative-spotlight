@@ -19,7 +19,10 @@ public class ServiceTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return "/actuator/health".equals(request.getRequestURI());
+        String uri = request.getRequestURI();
+        boolean isHealthEndpoint = "/actuator/health".equals(uri);
+        boolean isPublicImageFile = "GET".equals(request.getMethod()) && uri.matches("^/images/\\d+/file$");
+        return isHealthEndpoint || isPublicImageFile;
     }
 
     @Override
