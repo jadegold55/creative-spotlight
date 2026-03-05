@@ -2,6 +2,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "DelannoyCarpetGenerator",
+            "request": "launch",
+            "mainClass": "DelannoyCarpetGenerator",
+            "projectName": ""
+        },
+        {
             "name": "Python: artsandcraft.py",
             "type": "python",
             "request": "launch",

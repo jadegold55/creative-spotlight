@@ -46,8 +46,6 @@ services:
         condition: service_started
     environment:
       - TOKEN=${TOKEN}
-      - GUILD_ID=${GUILD_ID}
-      - chnl_id=${chnl_id}
       - PYTHONPATH=/app
       - BACKEND_URL=http://backend:8080
       - PUBLIC_URL=${PUBLIC_URL}
