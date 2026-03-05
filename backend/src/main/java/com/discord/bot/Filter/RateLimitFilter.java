@@ -34,14 +34,8 @@ public class RateLimitFilter implements jakarta.servlet.Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         try {
             java.util.Enumeration<String> names = httpRequest.getHeaderNames();
-            while (names.hasMoreElements()) {
-                String name = names.nextElement();
-                System.out.println("DEBUG  " + name + " = " + httpRequest.getHeader(name));
-            }
-
             String bot = httpRequest.getHeader("Bot-User-Id");
             if (bot != null && bot.equals(expectedBotId)) {
-                System.out.println("Request from bot " + bot + " is allowed.");
                 chain.doFilter(request, response);
                 return;
             }

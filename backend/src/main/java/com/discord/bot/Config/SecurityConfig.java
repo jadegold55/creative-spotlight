@@ -8,14 +8,17 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import com.discord.bot.Filter.RateLimitFilter;
-
+import com.discord.bot.Filter.ServiceTokenFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     private final RateLimitFilter rateLimitFilter;
+    private final ServiceTokenFilter serviceTokenFilter;
 
-    public SecurityConfig(RateLimitFilter rateLimitFilter) {
+    public SecurityConfig(RateLimitFilter rateLimitFilter, ServiceTokenFilter serviceTokenFilter) {
         this.rateLimitFilter = rateLimitFilter;
+        this.serviceTokenFilter = serviceTokenFilter;
     }
 
     @Bean
@@ -23,11 +26,11 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/images/**").permitAll()
-                        .requestMatchers("/guilds/**").permitAll()
+                .requestMatchers("/actuator/health").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
-                .addFilterBefore(rateLimitFilter, org.springframework.web.filter.CorsFilter.class);
+                .addFilterBefore(rateLimitFilter, org.springframework.web.filter.CorsFilter.class)
+                .addFilterBefore(serviceTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

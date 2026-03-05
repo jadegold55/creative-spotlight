@@ -1,7 +1,7 @@
 import logging
 
 import aiohttp
-from bot.config import BACKEND_URL
+from bot.config import BACKEND_URL, API_SERVICE_TOKEN
 
 log = logging.getLogger(__name__)
 
@@ -11,7 +11,9 @@ _session: aiohttp.ClientSession | None = None
 async def _get_session() -> aiohttp.ClientSession:
     global _session
     if _session is None or _session.closed:
-        _session = aiohttp.ClientSession()
+        _session = aiohttp.ClientSession(
+            headers={"Authorization": f"Bearer {API_SERVICE_TOKEN}"}
+        )
     return _session
 
 
