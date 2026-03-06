@@ -49,6 +49,12 @@ public class RateLimitFilter implements jakarta.servlet.Filter {
         long availableTokens = bucket.getAvailableTokens();
         log.debug("UserID: {} || username= {} has {} tokens left.", key, name, availableTokens);
         if (bucket.tryConsume(1)) {
+            log.info("method={} uri={} user={} authenticated={} tokens={}",
+                    httpRequest.getMethod(),
+                    httpRequest.getRequestURI(),
+                    key,
+                    auth != null && auth.isAuthenticated(),
+                    bucket != null ? bucket.getAvailableTokens() : "skipped");
             chain.doFilter(request, response);
         } else {
             HttpServletResponse httpResponse = (HttpServletResponse) response;
