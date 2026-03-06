@@ -23,6 +23,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        ServiceTokenFilter serviceFilter = new ServiceTokenFilter(serviceToken);
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
@@ -30,8 +31,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/images/*/file").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
-                .addFilterBefore(new ServiceTokenFilter(serviceToken), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new RateLimitFilter(), ServiceTokenFilter.class);
+                .addFilterBefore(serviceFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new RateLimitFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
