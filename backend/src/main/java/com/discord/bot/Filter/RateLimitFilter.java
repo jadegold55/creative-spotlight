@@ -1,6 +1,5 @@
 package com.discord.bot.Filter;
 
-import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -15,13 +14,13 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-@Component
 public class RateLimitFilter implements jakarta.servlet.Filter {
-    @Value("${bot.secret}")
-    private String expectedBotId;
+    private static final Logger log = LoggerFactory.getLogger(RateLimitFilter.class);
 
     private final Cache<String, Bucket> cache = Caffeine.newBuilder()
             .maximumSize(1000)
@@ -32,39 +31,30 @@ public class RateLimitFilter implements jakarta.servlet.Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws java.io.IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        try {
-            java.util.Enumeration<String> names = httpRequest.getHeaderNames();
-            String bot = httpRequest.getHeader("Bot-User-Id");
-            if (bot != null && bot.equals(expectedBotId)) {
-                chain.doFilter(request, response);
-                return;
-            }
-            String key = httpRequest.getHeader("X-User-Id");
-            String name = httpRequest.getHeader("X-User-Name");
-            if (key == null) {
-                key = httpRequest.getRemoteAddr();
-            }
-            if (name == null) {
-                name = "Unknown";
-            }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            chain.doFilter(request, response);
+            return;
+        }
+        String key = httpRequest.getHeader("X-User-Id");
+        String name = httpRequest.getHeader("X-User-Name");
+        if (key == null) {
+            key = httpRequest.getRemoteAddr();
+        }
+        if (name == null) {
+            name = "Unknown";
+        }
 
-            Bucket bucket = cache.get(key, k -> createBucket());
-            long availableTokens = bucket.getAvailableTokens();
-            System.out
-                    .println("UserID: " + key + " || username= " + name + " has " + availableTokens + " tokens left.");
-            if (bucket.tryConsume(1)) {
-                chain.doFilter(request, response);
-            } else {
-                HttpServletResponse httpResponse = (HttpServletResponse) response;
-                httpResponse.setStatus(429);
-                httpResponse.setContentType("application/json");
-                httpResponse.getWriter().write("{\"error\": \"Too many requests\"}");
-            }
-        } catch (Exception e) {
+        Bucket bucket = cache.get(key, k -> createBucket());
+        long availableTokens = bucket.getAvailableTokens();
+        log.debug("UserID: {} || username= {} has {} tokens left.", key, name, availableTokens);
+        if (bucket.tryConsume(1)) {
+            chain.doFilter(request, response);
+        } else {
             HttpServletResponse httpResponse = (HttpServletResponse) response;
-            httpResponse.setStatus(500);
+            httpResponse.setStatus(429);
             httpResponse.setContentType("application/json");
-            httpResponse.getWriter().write("{\"error\": \"Internal server error\"}");
+            httpResponse.getWriter().write("{\"error\": \"Too many requests\"}");
         }
     }
 

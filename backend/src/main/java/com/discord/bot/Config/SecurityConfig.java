@@ -1,5 +1,7 @@
 package com.discord.bot.Config;
 
+import java.security.Provider.Service;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,28 +12,25 @@ import org.springframework.security.config.Customizer;
 import com.discord.bot.Filter.RateLimitFilter;
 import com.discord.bot.Filter.ServiceTokenFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    private final RateLimitFilter rateLimitFilter;
-    private final ServiceTokenFilter serviceTokenFilter;
 
-    public SecurityConfig(RateLimitFilter rateLimitFilter, ServiceTokenFilter serviceTokenFilter) {
-        this.rateLimitFilter = rateLimitFilter;
-        this.serviceTokenFilter = serviceTokenFilter;
-    }
+    @Value("${api.service.token}")
+    private String serviceToken;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers(HttpMethod.GET, "/images/*/file").permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/images/*/file").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
-                .addFilterBefore(serviceTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(rateLimitFilter, org.springframework.web.filter.CorsFilter.class);
+                .addFilterBefore(new ServiceTokenFilter(serviceToken), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new RateLimitFilter(), ServiceTokenFilter.class);
 
         return http.build();
     }
