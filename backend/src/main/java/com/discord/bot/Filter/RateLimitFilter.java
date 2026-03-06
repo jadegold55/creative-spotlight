@@ -32,11 +32,10 @@ public class RateLimitFilter implements jakarta.servlet.Filter {
             throws java.io.IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated())
+        if (auth != null && auth.isAuthenticated()) {
             log.info("method={} uri={} authenticated=true (rate limit skipped)",
                     httpRequest.getMethod(),
                     httpRequest.getRequestURI());
-        {
             chain.doFilter(request, response);
             return;
         }
