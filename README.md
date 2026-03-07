@@ -75,6 +75,7 @@ Admins can remove gallery submissions directly through an in-app selection flow.
 - `/setup contest` — configure spotlight contests.
 - `/setup poems` — configure daily poem posting.
 - `/setup reset` — reset current server configuration.
+- `/upload` — upload one or multiple works of art at once to display in a grouped gallery or one single gallery, and don't forget the title!
 
 ## Project structure
 
