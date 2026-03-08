@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
-import com.discord.bot.Filter.RateLimitFilter;
 import com.discord.bot.Filter.ServiceTokenFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -29,10 +28,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.GET, "/images/*/file").permitAll()
-                        .anyRequest().authenticated())
+                        .anyRequest().hasRole("BOT"))
                 .httpBasic(Customizer.withDefaults())
-                .addFilterBefore(serviceFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new RateLimitFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(serviceFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
