@@ -40,6 +40,22 @@ class Spotlight(commands.Cog):
         if self._task:
             self._task.cancel()
 
+    async def _resolve_channel(self, channel_id: int, guild_id: int):
+        channel = self.bot.get_channel(channel_id)
+        if channel is not None:
+            return channel
+
+        try:
+            return await self.bot.fetch_channel(channel_id)
+        except Exception as e:
+            log.warning(
+                "Channel lookup failed for guild %s channel %s: %s",
+                guild_id,
+                channel_id,
+                e,
+            )
+            return None
+
     async def _contest_loop(self):
         await self.bot.wait_until_ready()
         while not self.bot.is_closed():
@@ -91,6 +107,15 @@ class Spotlight(commands.Cog):
 
                 events.sort(key=lambda x: x[0])
                 next_time = events[0][0]
+                next_event_type = events[0][1]
+                next_guild = events[0][2].get("guildId")
+
+                log.info(
+                    "Next contest event %s for guild %s at %s UTC",
+                    next_event_type,
+                    next_guild,
+                    next_time.isoformat(),
+                )
 
                 await discord.utils.sleep_until(next_time)
 
@@ -99,6 +124,12 @@ class Spotlight(commands.Cog):
                     if ev_time > now_utc:
                         break
                     gid = guild["guildId"]
+                    log.info(
+                        "Processing contest event %s for guild %s (scheduled %s UTC)",
+                        ev_type,
+                        gid,
+                        ev_time.isoformat(),
+                    )
                     if ev_type == "end":
                         await self.announce_winner(guild)
                         self.active_contests.pop(gid, None)
@@ -114,21 +145,37 @@ class Spotlight(commands.Cog):
     async def _start_contest(self, guild, now_utc):
         gid = guild["guildId"]
         duration = guild["contestDurationDays"]
-        channel = self.bot.get_channel(guild["spotlightChannelId"])
+        channel_id = guild["spotlightChannelId"]
+        log.info("Starting contest announcement for guild %s channel %s", gid, channel_id)
+
+        channel = await self._resolve_channel(channel_id, gid)
         if not channel:
+            log.warning(
+                "Contest start skipped: no channel found for guild %s channel %s",
+                gid,
+                channel_id,
+            )
             return
         try:
             ContestView = Contest(self.bot)
             await ContestView.build_layout(now_utc + timedelta(days=duration))
             await channel.send(view=ContestView)
+            log.info("Contest start message sent for guild %s", gid)
             end_time = now_utc + timedelta(days=duration)
             self.active_contests[gid] = (end_time, guild)
         except Exception as e:
             log.error(f"Failed to announce contest " f"in guild {gid}: {e}")
 
     async def announce_winner(self, guild):
-        channel = self.bot.get_channel(guild["spotlightChannelId"])
+        gid = guild["guildId"]
+        channel_id = guild["spotlightChannelId"]
+        channel = await self._resolve_channel(channel_id, gid)
         if not channel:
+            log.warning(
+                "Winner announcement skipped: no channel found for guild %s channel %s",
+                gid,
+                channel_id,
+            )
             return
 
         winner = await get(
