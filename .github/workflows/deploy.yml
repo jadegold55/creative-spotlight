@@ -18,5 +18,6 @@ jobs:
             cd ~/creative-spotlight
             git pull origin main
             bash scripts/load-secrets.sh
+            docker compose down
             docker compose up --build -d
             docker image prune -f
