@@ -3,8 +3,11 @@ import logging
 from datetime import datetime, timedelta
 
 import discord
+
 import pytz
 from discord.ext import commands
+
+from discord.ui import Button, LayoutView
 
 from bot.apihelper.api import get
 from bot.config import PUBLIC_URL
@@ -115,12 +118,9 @@ class Spotlight(commands.Cog):
         if not channel:
             return
         try:
-            await channel.send(
-                "@everyone the contest is starting! "
-                "Submit your art with the /upload command. "
-                "The winner will be announced in "
-                f"{duration} days!"
-            )
+            ContestView = Contest(self.bot)
+            await ContestView.build_layout(now_utc + timedelta(days=duration))
+            await channel.send(view=ContestView)
             end_time = now_utc + timedelta(days=duration)
             self.active_contests[gid] = (end_time, guild)
         except Exception as e:
@@ -158,6 +158,39 @@ class Spotlight(commands.Cog):
             await channel.send(embed=embed)
         except Exception as e:
             log.error(f"Failed to send winner in " f"guild {guild['guildId']}: {e}")
+
+
+class Contest(LayoutView):
+    def __init__(self, bot):
+        super().__init__(timeout=None)
+        self.bot = bot
+
+    async def build_layout(self, contest_deadline):
+        self.clear_items()
+
+        self.add_item(
+            discord.ui.TextDisplay(
+                content=(
+                    f"**                  Artist Sowcase               ** \n"  ## center the title of the contest here
+                    f"**Description: Submit your art and or work adjacent to the contest! Feel free to reach out to any of the moderators** \n"
+                    f"**Deadline: {contest_deadline}**"
+                )
+            )
+        )
+        self.add_item(
+            Button(
+                label="signup",
+                style=discord.ButtonStyle.primary,
+                custom_id="contest_signup",
+                disabled=True,
+            )
+        )
+        """--TODO---
+        1. add submission detials into database when user click the signup button
+        2. add a command to let user submit their work after they click the signup button, and store the submission details into database, such as submission url, submission description, etc.
+        3. use gallery view to show all submissions in channel and sperate from general viewing
+        4. add new table to store votes for contest, people who are signed up, views, etc. and update the table when user click the vote button in gallery view
+        4. add a view for submission, and add a button to the view for voting"""
 
 
 async def setup(bot):
