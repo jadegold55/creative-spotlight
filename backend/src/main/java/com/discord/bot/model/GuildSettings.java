@@ -1,8 +1,10 @@
 package com.discord.bot.model;
 
+import java.time.Instant;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.Column;
 
 @Entity
 
@@ -19,16 +21,10 @@ public class GuildSettings {
     private Integer poemMinute;
     @Column(name = "poem_timezone")
     private String poemTimezone;
-    @Column(name = "contest_day")
-    private Integer contestDay;
-    @Column(name = "contest_hour")
-    private Integer contestHour;
-    @Column(name = "contest_minute")
-    private Integer contestMinute;
-    @Column(name = "contest_timezone")
-    private String contestTimeZone;
-    @Column(name = "contest_duration_days")
-    private Integer contestDurationDays;
+    @Column(name = "contest_start_at")
+    private Instant contestStartAt;
+    @Column(name = "contest_deadline_at")
+    private Instant contestDeadlineAt;
 
     public GuildSettings() {
 
@@ -65,24 +61,12 @@ public class GuildSettings {
         return poemTimezone;
     }
 
-    public Integer getContestDay() {
-        return contestDay;
+    public Instant getContestStartAt() {
+        return contestStartAt;
     }
 
-    public Integer getContestHour() {
-        return contestHour;
-    }
-
-    public Integer getContestMinute() {
-        return contestMinute;
-    }
-
-    public String getContestTimezone() {
-        return contestTimeZone;
-    }
-
-    public Integer getContestDurationDays() {
-        return contestDurationDays;
+    public Instant getContestDeadlineAt() {
+        return contestDeadlineAt;
     }
 
     // Setters
@@ -110,23 +94,11 @@ public class GuildSettings {
         this.poemTimezone = poemTimezone;
     }
 
-    public void setContestDay(Integer contestDay) {
-        this.contestDay = contestDay;
+    public void setContestStartAt(Instant contestStartAt) {
+        this.contestStartAt = contestStartAt;
     }
 
-    public void setContestHour(Integer contestHour) {
-        this.contestHour = contestHour;
-    }
-
-    public void setContestMinute(Integer contestMinute) {
-        this.contestMinute = contestMinute;
-    }
-
-    public void setContestTimezone(String contestTimezone) {
-        this.contestTimeZone = contestTimezone;
-    }
-
-    public void setContestDurationDays(Integer contestDurationDays) {
-        this.contestDurationDays = contestDurationDays;
+    public void setContestDeadlineAt(Instant contestDeadlineAt) {
+        this.contestDeadlineAt = contestDeadlineAt;
     }
 }

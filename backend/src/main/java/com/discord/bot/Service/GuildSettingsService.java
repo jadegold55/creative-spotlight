@@ -1,15 +1,21 @@
 package com.discord.bot.Service;
 
+import java.time.DayOfWeek;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.TemporalAdjusters;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.discord.bot.Repository.GuildSettingsRepo;
 import com.discord.bot.dto.GuildSettingsResponse;
 import com.discord.bot.dto.SetupChannelsRequest;
 import com.discord.bot.dto.SetupContestRequest;
 import com.discord.bot.dto.SetupPoemsRequest;
 import com.discord.bot.model.GuildSettings;
-import java.util.List;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class GuildSettingsService {
@@ -34,12 +40,10 @@ public class GuildSettingsService {
 
     public GuildSettingsResponse setupContest(Long guildId, SetupContestRequest request) {
         GuildSettings settings = getOrCreate(guildId);
+        ContestWindow contestWindow = calculateContestWindow(request);
         settings.setSpotlightChannelId(request.spotlightChannelId());
-        settings.setContestDay(request.day());
-        settings.setContestHour(request.hour());
-        settings.setContestMinute(request.minute());
-        settings.setContestTimezone(request.timezone());
-        settings.setContestDurationDays(request.durationDays());
+        settings.setContestStartAt(contestWindow.startAt());
+        settings.setContestDeadlineAt(contestWindow.deadlineAt());
         return GuildSettingsResponse.from(guildSettingsRepo.save(settings));
     }
 
@@ -81,12 +85,40 @@ public class GuildSettingsService {
     public void deleteContestSetup(Long guildId) {
         GuildSettings settings = getGuildOrThrow(guildId);
         settings.setSpotlightChannelId(null);
-        settings.setContestDay(null);
-        settings.setContestHour(null);
-        settings.setContestMinute(null);
-        settings.setContestTimezone(null);
-        settings.setContestDurationDays(null);
+        settings.setContestStartAt(null);
+        settings.setContestDeadlineAt(null);
         guildSettingsRepo.save(settings);
+    }
+
+    private ContestWindow calculateContestWindow(SetupContestRequest request) {
+        ZoneId zoneId;
+        try {
+            zoneId = ZoneId.of(request.timezone());
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid contest timezone", ex);
+        }
+
+        ZonedDateTime now = ZonedDateTime.now(zoneId);
+        ZonedDateTime contestStart = now
+                .with(TemporalAdjusters.nextOrSame(toDayOfWeek(request.day())))
+                .withHour(request.hour())
+                .withMinute(request.minute())
+                .withSecond(0)
+                .withNano(0);
+
+        if (!contestStart.isAfter(now)) {
+            contestStart = contestStart.plusWeeks(1);
+        }
+
+        ZonedDateTime contestDeadline = contestStart.plusDays(request.durationDays());
+        return new ContestWindow(contestStart.toInstant(), contestDeadline.toInstant());
+    }
+
+    private DayOfWeek toDayOfWeek(int configuredDay) {
+        return DayOfWeek.of(configuredDay + 1);
+    }
+
+    private record ContestWindow(java.time.Instant startAt, java.time.Instant deadlineAt) {
     }
 
     private GuildSettings getOrCreate(Long guildId) {
