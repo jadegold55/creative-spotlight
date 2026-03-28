@@ -11,14 +11,13 @@ import org.springframework.data.domain.Pageable;
 
 public interface GalleryImageVoteRepo extends JpaRepository<GalleryImageVote, Long> {
 
-    public Optional<GalleryImageVote> findByUserIDAndGalleryImage(Long userID, GalleryImage image);
+    Optional<GalleryImageVote> findByUserIdAndGalleryImage(Long userId, GalleryImage image);
 
-    public Long countByGalleryImage(GalleryImage image);
+    Long countByGalleryImage(GalleryImage image);
 
     @Query("SELECT v.galleryImage FROM GalleryImageVote v GROUP BY v.galleryImage ORDER BY COUNT(v) DESC")
     List<GalleryImage> findWinningImages(Pageable pageable);
 
-    @Query("SELECT v.galleryImage FROM GalleryImageVote v WHERE v.galleryImage.guildid = :guildid GROUP BY v.galleryImage ORDER BY COUNT(v) DESC")
-    List<GalleryImage> findWinningImagesByGuild(@Param("guildid") Long guildid, Pageable pageable);
-
+    @Query("SELECT v.galleryImage FROM GalleryImageVote v WHERE v.galleryImage.guildId = :guildId GROUP BY v.galleryImage ORDER BY COUNT(v) DESC")
+    List<GalleryImage> findWinningImagesByGuild(@Param("guildId") Long guildId, Pageable pageable);
 }

@@ -6,7 +6,6 @@ import com.discord.bot.model.ContestWinner;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -48,43 +47,43 @@ public class GalleryImageController {
     }
 
     @GetMapping("/all")
-    public List<GalleryImageResponse> getAllImages(@RequestParam Long guildid) {
-        return galleryImageService.getAllImages(guildid);
+    public List<GalleryImageResponse> getAllImages(@RequestParam Long guildId) {
+        return galleryImageService.getAllImages(guildId);
     }
 
     @GetMapping("/contest/winner")
-    public ContestWinner getContestWinner(@RequestParam Long guildid) {
-        return galleryImageService.getContestWinner(guildid);
+    public ContestWinner getContestWinner(@RequestParam Long guildId) {
+        return galleryImageService.getContestWinner(guildId);
     }
 
-    @GetMapping("/user/{uploaderid}")
-    public List<GalleryImageResponse> getImagesByUploader(@PathVariable Long uploaderid, @RequestParam Long guildid) {
-        return galleryImageService.getImagesByUploader(uploaderid, guildid);
+    @GetMapping("/user/{uploaderId}")
+    public List<GalleryImageResponse> getImagesByUploader(@PathVariable Long uploaderId, @RequestParam Long guildId) {
+        return galleryImageService.getImagesByUploader(uploaderId, guildId);
     }
 
     @PostMapping("/add")
     public ResponseEntity<GalleryImageResponse> addImage(
             @RequestParam("file") MultipartFile file,
-            @RequestParam @NotNull Long uploaderid,
-            @RequestParam @NotNull Long guildid,
+            @RequestParam @NotNull Long uploaderId,
+            @RequestParam @NotNull Long guildId,
             @RequestParam(required = false) String title) {
-        GalleryImageResponse created = galleryImageService.addImage(file, uploaderid, guildid, title);
+        GalleryImageResponse created = galleryImageService.addImage(file, uploaderId, guildId, title);
         return ResponseEntity.created(URI.create("/images/" + created.id())).body(created);
     }
 
     @PostMapping("/add-multiple")
     public ResponseEntity<List<GalleryImageResponse>> addImages(
             @RequestParam("files") List<MultipartFile> files,
-            @RequestParam @NotNull Long uploaderid,
-            @RequestParam @NotNull Long guildid,
+            @RequestParam @NotNull Long uploaderId,
+            @RequestParam @NotNull Long guildId,
             @RequestParam(required = false) String title) {
-        List<GalleryImageResponse> created = galleryImageService.addImages(files, uploaderid, guildid, title);
+        List<GalleryImageResponse> created = galleryImageService.addImages(files, uploaderId, guildId, title);
         return ResponseEntity.created(URI.create("/images/group/" + created.get(0).groupId())).body(created);
     }
 
     @PostMapping("/{id}/vote")
-    public ResponseEntity<Void> vote(@PathVariable Long id, @RequestParam @NotNull Long userID) {
-        galleryImageService.vote(id, userID);
+    public ResponseEntity<Void> vote(@PathVariable Long id, @RequestParam @NotNull Long userId) {
+        galleryImageService.vote(id, userId);
         return ResponseEntity.accepted().build();
     }
 
@@ -93,5 +92,4 @@ public class GalleryImageController {
         galleryImageService.deleteImage(id);
         return ResponseEntity.noContent().build();
     }
-
 }

@@ -7,7 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
 @Entity
-
 public class GuildSettings {
     @Id
     private Long guildId;

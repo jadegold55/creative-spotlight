@@ -2,12 +2,12 @@ package com.discord.bot.model;
 
 public class ContestWinner {
     private Long id;
-    private Long uploaderid;
+    private Long uploaderId;
     private Long votes;
 
-    public ContestWinner(Long id, Long uploaderid, Long votes) {
+    public ContestWinner(Long id, Long uploaderId, Long votes) {
         this.id = id;
-        this.uploaderid = uploaderid;
+        this.uploaderId = uploaderId;
         this.votes = votes;
     }
 
@@ -15,8 +15,8 @@ public class ContestWinner {
         return id;
     }
 
-    public Long getUploaderid() {
-        return uploaderid;
+    public Long getUploaderId() {
+        return uploaderId;
     }
 
     public Long getVotes() {

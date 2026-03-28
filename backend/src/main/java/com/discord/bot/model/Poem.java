@@ -1,9 +1,9 @@
 package com.discord.bot.model;
 
 import java.time.LocalDateTime;
+import jakarta.persistence.Column;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
@@ -20,7 +20,8 @@ public class Poem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long uploaderid;
+    @Column(name = "uploader_id")
+    private Long uploaderId;
     private LocalDateTime postedAt;
     private String content;
     private String title;
@@ -28,13 +29,11 @@ public class Poem {
     @Enumerated(EnumType.STRING)
     private PoemType poemType;
 
-    // Add other fields as needed
     public Poem() {
-        // Default constructor
     }
 
-    public Poem(Long uploaderid, LocalDateTime postedAt, String content, String title, String author) {
-        this.uploaderid = uploaderid;
+    public Poem(Long uploaderId, LocalDateTime postedAt, String content, String title, String author) {
+        this.uploaderId = uploaderId;
         this.postedAt = LocalDateTime.now();
         this.content = content;
         this.title = title;
@@ -49,12 +48,12 @@ public class Poem {
         this.id = id;
     }
 
-    public Long getUploaderid() {
-        return uploaderid;
+    public Long getUploaderId() {
+        return uploaderId;
     }
 
-    public void setUploaderid(Long uploaderid) {
-        this.uploaderid = uploaderid;
+    public void setUploaderId(Long uploaderId) {
+        this.uploaderId = uploaderId;
     }
 
     public LocalDateTime getPostedAt() {

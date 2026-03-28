@@ -1,7 +1,6 @@
 package com.discord.bot.model;
 
-import java.lang.annotation.Inherited;
-import com.discord.bot.model.Poem;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
@@ -12,7 +11,7 @@ import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "PoemVote", uniqueConstraints = {
-        @UniqueConstraint(name = "Unique_Person_and_Unique_Poem", columnNames = { "poem_id", "userID" })
+        @UniqueConstraint(name = "Unique_Person_and_Unique_Poem", columnNames = { "poem_id", "user_id" })
 })
 public class PoemVote {
     @Id
@@ -20,10 +19,11 @@ public class PoemVote {
     private Long id;
     @ManyToOne
     private Poem poem;
-    private Long userID;
+    @Column(name = "user_id")
+    private Long userId;
 
-    public PoemVote(Long user, Poem poem) {
-        this.userID = user;
+    public PoemVote(Long userId, Poem poem) {
+        this.userId = userId;
         this.poem = poem;
     }
 

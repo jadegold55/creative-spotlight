@@ -16,11 +16,11 @@ public class GalleryImageVoteService {
         this.galleryVoteRepo = galleryVoteRepo;
     }
 
-    public void addVote(Long userID, GalleryImage galleryimage) {
-        if (galleryVoteRepo.findByUserIDAndGalleryImage(userID, galleryimage).isPresent()) {
+    public void addVote(Long userId, GalleryImage galleryimage) {
+        if (galleryVoteRepo.findByUserIdAndGalleryImage(userId, galleryimage).isPresent()) {
             throw new InvalidVote("Unique ID must have Unique image ID");
         }
-        galleryVoteRepo.save(new GalleryImageVote(userID, galleryimage));
+        galleryVoteRepo.save(new GalleryImageVote(userId, galleryimage));
     }
 
     public Long getVoteCount(GalleryImage image) {

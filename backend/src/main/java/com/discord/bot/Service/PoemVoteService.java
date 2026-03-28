@@ -14,11 +14,11 @@ public class PoemVoteService {
         this.poemVoteRepo = poemVoteRepo;
     }
 
-    public void addVote(Long userID, Poem poem) {
-        if (poemVoteRepo.findByUserIDAndPoem(userID, poem).isPresent()) {
+    public void addVote(Long userId, Poem poem) {
+        if (poemVoteRepo.findByUserIdAndPoem(userId, poem).isPresent()) {
             throw new InvalidVote("Unique ID must have Unique Poem ID");
         }
-        poemVoteRepo.save(new PoemVote(userID, poem));
+        poemVoteRepo.save(new PoemVote(userId, poem));
     }
 
     public Long getVoteCount(Poem poem) {

@@ -29,17 +29,17 @@ public class GalleryImageService {
     }
 
     public List<GalleryImageResponse> getAllImages(Long guildId) {
-        return galleryImageRepo.findByGuildidWithVotes(guildId);
+        return galleryImageRepo.findByGuildIdWithVotes(guildId);
     }
 
     public ContestWinner getContestWinner(Long guildId) {
         GalleryImage winner = galleryImageVoteService.getWinningImage(guildId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No contest winner found"));
-        return new ContestWinner(winner.getId(), winner.getuploaderID(), galleryImageVoteService.getVoteCount(winner));
+        return new ContestWinner(winner.getId(), winner.getUploaderId(), galleryImageVoteService.getVoteCount(winner));
     }
 
     public List<GalleryImageResponse> getImagesByUploader(Long uploaderId, Long guildId) {
-        return galleryImageRepo.findByUploaderIDAndGuildid(uploaderId, guildId)
+        return galleryImageRepo.findByUploaderIdAndGuildId(uploaderId, guildId)
                 .stream()
                 .map(image -> toResponse(image, galleryImageVoteService.getVoteCount(image)))
                 .toList();
@@ -90,8 +90,8 @@ public class GalleryImageService {
     private GalleryImageResponse toResponse(GalleryImage image, Long voteCount) {
         return new GalleryImageResponse(
                 image.getId(),
-                image.getuploaderID(),
-                image.getGuildid(),
+                image.getUploaderId(),
+                image.getGuildId(),
                 image.getTitle(),
                 image.getContentType(),
                 image.getUploadedAt(),

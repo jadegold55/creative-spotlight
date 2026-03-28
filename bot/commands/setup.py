@@ -1,4 +1,3 @@
-from aiohttp.web_routedef import view
 import discord
 from discord import app_commands
 from discord.ext import commands

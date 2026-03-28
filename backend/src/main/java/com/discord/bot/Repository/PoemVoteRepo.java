@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.discord.bot.model.PoemVote;
 
 public interface PoemVoteRepo extends JpaRepository<PoemVote, Long> {
-    public Optional<PoemVote> findByUserIDAndPoem(Long userID, Poem poem);
+    Optional<PoemVote> findByUserIdAndPoem(Long userId, Poem poem);
 
-    public Long countByPoem(Poem poem);
+    Long countByPoem(Poem poem);
 }

@@ -14,19 +14,17 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Lob;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-// gallery image has two differences here, one will be evenet based to schedule a dicosrd event where people can upload their pictures to the gallery so then what we
-// want to do is when people view the gallery, lets let it be random and make sure that another pciture can't be seen in the gallery until all the pictures have been seen. so we can do this by having a list of picture ids that have been seen and then when we get a random picture, we check if it has been seen before and if it has, we get another random picture until we find one that hasn't been seen before. then we add that picture id to the list of seen pictures. once all pictures have been seen, we clear the list of seen pictures and start over. this way, we can ensure that all pictures are seen before any picture is seen again. the other difference is that we want to track who uploaded the picture and when it was uploaded so we can display that information in the gallery viewer.
 
-//the second kind of gallery is for a protfoli that you can add to the bot which will communicate with teh front end at the same time. 
 @Entity
 public class GalleryImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long uploaderID;
+    @Column(name = "uploader_id")
+    private Long uploaderId;
     @Column(name = "guild_id")
-    private Long guildid;
+    private Long guildId;
     private LocalDateTime uploadedAt;
     private String contentType;
     private String title;
@@ -41,39 +39,38 @@ public class GalleryImage {
     public GalleryImage() {
     }
 
-    // when imaage is created
-    public GalleryImage(String contentType, byte[] imageData, Long uploaderID, Long guildid) {
+    public GalleryImage(String contentType, byte[] imageData, Long uploaderId, Long guildId) {
         this.contentType = contentType;
         this.imageData = imageData;
-        this.uploaderID = uploaderID;
-        this.guildid = guildid;
+        this.uploaderId = uploaderId;
+        this.guildId = guildId;
         this.groupId = UUID.randomUUID().toString();
         this.uploadedAt = LocalDateTime.now();
     }
 
-    public GalleryImage(String contentType, byte[] imageData, Long uploaderID, Long guildid, String groupId) {
+    public GalleryImage(String contentType, byte[] imageData, Long uploaderId, Long guildId, String groupId) {
         this.contentType = contentType;
         this.imageData = imageData;
-        this.uploaderID = uploaderID;
-        this.guildid = guildid;
+        this.uploaderId = uploaderId;
+        this.guildId = guildId;
         this.groupId = groupId;
         this.uploadedAt = LocalDateTime.now();
     }
 
-    public Long getuploaderID() {
-        return uploaderID;
+    public Long getUploaderId() {
+        return uploaderId;
     }
 
-    public Long getGuildid() {
-        return guildid;
+    public void setUploaderId(Long uploaderId) {
+        this.uploaderId = uploaderId;
     }
 
-    public String getTitle() {
-        return title;
+    public Long getGuildId() {
+        return guildId;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setGuildId(Long guildId) {
+        this.guildId = guildId;
     }
 
     public Long getId() {
@@ -84,12 +81,12 @@ public class GalleryImage {
         this.id = id;
     }
 
-    public void setUploaderID(Long uploaderID) {
-        this.uploaderID = uploaderID;
+    public String getTitle() {
+        return title;
     }
 
-    public void setGuildid(Long guildid) {
-        this.guildid = guildid;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getContentType() {
