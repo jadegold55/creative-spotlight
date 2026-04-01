@@ -67,7 +67,7 @@ Spring Boot Backend (port 8080)
 PostgreSQL (port 5432)
 ```
 
-**Public access:** Only `GET /images/{id}/file` is publicly reachable through Nginx. All other backend routes are locked to the Docker internal network (`172.16.0.0/12`), meaning only the bot container can reach them.
+**Public access:** Only `GET /images/{id}/file` is publicly reachable through Nginx. All other backend routes are locked to the Docker internal network, meaning only the bot container can reach them.
 
 **Auth flow:** The bot attaches `Authorization: Bearer <API_SERVICE_TOKEN>` on every request. The backend's `ServiceTokenFilter` validates this token and grants `ROLE_BOT` to the Spring Security context before the request reaches any controller.
 
