@@ -53,10 +53,10 @@ class Setup(commands.Cog):
         )
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
-    @setup_group.command(name="contest", description="Configure spotlight contests")
+    @setup_group.command(name="contest", description="Configure a one-time spotlight contest")
     @app_commands.describe(
         channel="Channel for contests",
-        day="Day for weekly contests",
+        day="Day for the contest start",
         duration="Duration in days (1-14)",
     )
     @app_commands.choices(day=DAY_CHOICES)
@@ -103,11 +103,16 @@ class Setup(commands.Cog):
             },
         )
 
-        if status != 200:
+        if status != 204:
             await interaction.response.send_message(
                 "Failed to save settings. Please try again.", ephemeral=True
             )
             return
+
+        if feature.value == "contest":
+            contest_cog = self.bot.get_cog("Spotlight")
+            if contest_cog is not None:
+                await contest_cog.clear_contest_for_guild(interaction.guild_id)
 
         await interaction.response.send_message(
             f"{feature.name} configuration removed successfully!",
@@ -239,6 +244,11 @@ class TimeSetupView(View):
                 "Failed to save settings. Please try again.", ephemeral=True
             )
             return
+
+        if self.feature == "contest":
+            contest_cog = interaction.client.get_cog("Spotlight")
+            if contest_cog is not None:
+                await contest_cog.sync_contest_for_guild(self.guild_id)
 
         tz_names = {
             "America/New_York": "ET",

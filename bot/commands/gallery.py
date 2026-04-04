@@ -107,7 +107,7 @@ class GalleryViewer(LayoutView):
 
         status, response = await post(
             f"images/{first_image['id']}/vote",
-            params={"userID": interaction.user.id},
+            params={"userId": interaction.user.id},
             headers={
                 "X-User-Id": str(interaction.user.id),
                 "X-User-Name": str(interaction.user.name),
@@ -136,7 +136,7 @@ class Gallery(commands.Cog):
         await interaction.response.defer(thinking=True, ephemeral=True)
         images = await get(
             "images/all",
-            params={"guildid": interaction.guild.id},
+            params={"guildId": interaction.guild.id},
             headers={
                 "X-User-Id": str(interaction.user.id),
                 "X-User-Name": str(interaction.user.name),
@@ -219,8 +219,8 @@ class Gallery(commands.Cog):
                 )
             endpoint = "images/add-multiple"
 
-        form.add_field("uploaderid", str(interaction.user.id))
-        form.add_field("guildid", str(interaction.guild.id))
+        form.add_field("uploaderId", str(interaction.user.id))
+        form.add_field("guildId", str(interaction.guild.id))
         form.add_field("title", title)
         status, resp = await post(endpoint, headers=headers, data=form)
 
@@ -247,7 +247,7 @@ class Gallery(commands.Cog):
         await interaction.response.defer(thinking=True, ephemeral=True)
         images = await get(
             f"images/user/{interaction.user.id}",
-            params={"guildid": interaction.guild.id},
+            params={"guildId": interaction.guild.id},
             headers={"X-User-Id": str(interaction.user.id)},
         )
 

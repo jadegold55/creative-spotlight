@@ -25,8 +25,8 @@ public class ContestSignupService {
     }
 
     public List<ContestSignupsResponse> getContestSignups(Long guildId) {
-        purgeExpiredSignups(guildId);
-        return contestSignupRepo.findByGuildIdOrderByUsernameAsc(guildId)
+        Instant signupDeadlineAt = getContestDeadlineOrThrow(guildId);
+        return contestSignupRepo.findByGuildIdAndSignupDeadlineAtOrderByUsernameAsc(guildId, signupDeadlineAt)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -38,13 +38,13 @@ public class ContestSignupService {
         }
 
         Instant signupDeadlineAt = getContestDeadlineOrThrow(guildId);
-        purgeExpiredSignups(guildId);
+        purgeExpiredSignups(guildId, signupDeadlineAt);
 
         if (!signupDeadlineAt.isAfter(Instant.now())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Contest signups are closed for this guild");
         }
 
-        if (contestSignupRepo.existsByGuildIdAndUserId(guildId, userId)) {
+        if (contestSignupRepo.existsByGuildIdAndUserIdAndSignupDeadlineAt(guildId, userId, signupDeadlineAt)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User is already signed up for this guild");
         }
 
@@ -57,16 +57,16 @@ public class ContestSignupService {
     }
 
     public void withdrawFromContest(Long guildId, Long userId) {
-        purgeExpiredSignups(guildId);
-        long deletedRows = contestSignupRepo.deleteByGuildIdAndUserId(guildId, userId);
+        Instant signupDeadlineAt = getContestDeadlineOrThrow(guildId);
+        long deletedRows = contestSignupRepo.deleteByGuildIdAndUserIdAndSignupDeadlineAt(guildId, userId, signupDeadlineAt);
         if (deletedRows == 0) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Signup not found for this user in this guild");
         }
     }
 
     public boolean isSignedUp(Long guildId, Long userId) {
-        purgeExpiredSignups(guildId);
-        return contestSignupRepo.existsByGuildIdAndUserId(guildId, userId);
+        Instant signupDeadlineAt = getContestDeadlineOrThrow(guildId);
+        return contestSignupRepo.existsByGuildIdAndUserIdAndSignupDeadlineAt(guildId, userId, signupDeadlineAt);
     }
 
     private ContestSignupsResponse toResponse(ContestSignups signup) {
@@ -79,8 +79,8 @@ public class ContestSignupService {
                 signup.getSignupDeadlineAt());
     }
 
-    private void purgeExpiredSignups(Long guildId) {
-        contestSignupRepo.deleteByGuildIdAndSignupDeadlineAtLessThanEqual(guildId, Instant.now());
+    private void purgeExpiredSignups(Long guildId, Instant signupDeadlineAt) {
+        contestSignupRepo.deleteByGuildIdAndSignupDeadlineAtLessThan(guildId, signupDeadlineAt);
     }
 
     private Instant getContestDeadlineOrThrow(Long guildId) {

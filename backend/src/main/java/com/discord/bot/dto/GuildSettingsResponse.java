@@ -11,8 +11,13 @@ public record GuildSettingsResponse(
         Integer poemHour,
         Integer poemMinute,
         String poemTimezone,
-    Instant contestStartAt,
-    Instant contestDeadlineAt) {
+        Integer contestDay,
+        Integer contestHour,
+        Integer contestMinute,
+        String contestTimezone,
+        Integer contestDurationDays,
+        Instant contestStartAt,
+        Instant contestDeadlineAt) {
 
     public static GuildSettingsResponse from(GuildSettings settings) {
         return new GuildSettingsResponse(
@@ -22,7 +27,12 @@ public record GuildSettingsResponse(
                 settings.getPoemHour(),
                 settings.getPoemMinute(),
                 settings.getPoemTimezone(),
-        settings.getContestStartAt(),
-        settings.getContestDeadlineAt());
+                settings.getContestDay(),
+                settings.getContestHour(),
+                settings.getContestMinute(),
+                settings.getContestTimezone(),
+                settings.getContestDurationDays(),
+                settings.getContestStartAt(),
+                settings.getContestDeadlineAt());
     }
 }

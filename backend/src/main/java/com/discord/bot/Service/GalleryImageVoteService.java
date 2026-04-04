@@ -27,7 +27,7 @@ public class GalleryImageVoteService {
         return galleryVoteRepo.countByGalleryImage(image);
     }
 
-    public Optional<GalleryImage> getWinningImage(Long guildID) {
-        return galleryVoteRepo.findWinningImagesByGuild(guildID, PageRequest.of(0, 1)).stream().findFirst();
+    public Optional<GalleryImage> getWinningImage(Long guildId) {
+        return galleryVoteRepo.findWinningImagesByGuild(guildId, PageRequest.of(0, 1)).stream().findFirst();
     }
 }

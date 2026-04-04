@@ -42,6 +42,11 @@ public class GuildSettingsService {
         GuildSettings settings = getOrCreate(guildId);
         ContestWindow contestWindow = calculateContestWindow(request);
         settings.setSpotlightChannelId(request.spotlightChannelId());
+        settings.setContestDay(request.day());
+        settings.setContestHour(request.hour());
+        settings.setContestMinute(request.minute());
+        settings.setContestTimezone(request.timezone());
+        settings.setContestDurationDays(request.durationDays());
         settings.setContestStartAt(contestWindow.startAt());
         settings.setContestDeadlineAt(contestWindow.deadlineAt());
         return GuildSettingsResponse.from(guildSettingsRepo.save(settings));
@@ -85,6 +90,11 @@ public class GuildSettingsService {
     public void deleteContestSetup(Long guildId) {
         GuildSettings settings = getGuildOrThrow(guildId);
         settings.setSpotlightChannelId(null);
+        settings.setContestDay(null);
+        settings.setContestHour(null);
+        settings.setContestMinute(null);
+        settings.setContestTimezone(null);
+        settings.setContestDurationDays(null);
         settings.setContestStartAt(null);
         settings.setContestDeadlineAt(null);
         guildSettingsRepo.save(settings);

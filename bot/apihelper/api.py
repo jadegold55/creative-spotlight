@@ -27,6 +27,7 @@ async def close_session():
 
 async def get(path, params=None, headers=None):
     session = await _get_session()
+    path = path.lstrip("/")
     async with session.get(
         f"{BACKEND_URL}/{path}", params=params, headers=headers
     ) as response:
@@ -39,6 +40,7 @@ async def get(path, params=None, headers=None):
 
 async def post(path, params=None, data=None, headers=None):
     session = await _get_session()
+    path = path.lstrip("/")
     async with session.post(
         f"{BACKEND_URL}/{path}", params=params, data=data, headers=headers
     ) as response:
@@ -47,6 +49,7 @@ async def post(path, params=None, data=None, headers=None):
 
 async def delete(path, params=None, headers=None):
     session = await _get_session()
+    path = path.lstrip("/")
     async with session.delete(
         f"{BACKEND_URL}/{path}", params=params, headers=headers
     ) as response:

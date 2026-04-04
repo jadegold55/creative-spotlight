@@ -20,6 +20,16 @@ public class GuildSettings {
     private Integer poemMinute;
     @Column(name = "poem_timezone")
     private String poemTimezone;
+    @Column(name = "contest_day")
+    private Integer contestDay;
+    @Column(name = "contest_hour")
+    private Integer contestHour;
+    @Column(name = "contest_minute")
+    private Integer contestMinute;
+    @Column(name = "contest_timezone")
+    private String contestTimezone;
+    @Column(name = "contest_duration_days")
+    private Integer contestDurationDays;
     @Column(name = "contest_start_at")
     private Instant contestStartAt;
     @Column(name = "contest_deadline_at")
@@ -68,6 +78,26 @@ public class GuildSettings {
         return contestDeadlineAt;
     }
 
+    public Integer getContestDay() {
+        return contestDay;
+    }
+
+    public Integer getContestHour() {
+        return contestHour;
+    }
+
+    public Integer getContestMinute() {
+        return contestMinute;
+    }
+
+    public String getContestTimezone() {
+        return contestTimezone;
+    }
+
+    public Integer getContestDurationDays() {
+        return contestDurationDays;
+    }
+
     // Setters
     public void setGuildId(Long guildId) {
         this.guildId = guildId;
@@ -99,5 +129,25 @@ public class GuildSettings {
 
     public void setContestDeadlineAt(Instant contestDeadlineAt) {
         this.contestDeadlineAt = contestDeadlineAt;
+    }
+
+    public void setContestDay(Integer contestDay) {
+        this.contestDay = contestDay;
+    }
+
+    public void setContestHour(Integer contestHour) {
+        this.contestHour = contestHour;
+    }
+
+    public void setContestMinute(Integer contestMinute) {
+        this.contestMinute = contestMinute;
+    }
+
+    public void setContestTimezone(String contestTimezone) {
+        this.contestTimezone = contestTimezone;
+    }
+
+    public void setContestDurationDays(Integer contestDurationDays) {
+        this.contestDurationDays = contestDurationDays;
     }
 }

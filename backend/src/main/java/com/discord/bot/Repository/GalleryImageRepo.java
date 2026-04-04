@@ -1,6 +1,7 @@
 package com.discord.bot.Repository;
 
 import com.discord.bot.model.GalleryImage;
+import java.util.Collection;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.discord.bot.dto.GalleryImageResponse;
@@ -17,4 +18,6 @@ public interface GalleryImageRepo extends JpaRepository<GalleryImage, Long> {
     List<GalleryImageResponse> findByGuildIdWithVotes(@Param("guildId") Long guildId);
 
     List<GalleryImage> findByUploaderIdAndGuildId(Long uploaderId, Long guildId);
+
+    List<GalleryImage> findByGuildIdAndUploaderIdIn(Long guildId, Collection<Long> uploaderIds);
 }
