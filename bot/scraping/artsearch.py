@@ -1,12 +1,17 @@
-import random
-import requests
 import logging
+import random
 
-from datetime import datetime
+import requests
 
 
 def scrapeArt():
-    url = f"https://api.artic.edu/api/v1/artworks?query[term][is_public_domain]=true&fields=id,title,artist_display,date_display,image_id&limit=1&page={random.randint(1, 1000)}"
+    page = random.randint(1, 1000)
+    url = (
+        "https://api.artic.edu/api/v1/artworks"
+        "?query[term][is_public_domain]=true"
+        "&fields=id,title,artist_display,date_display,image_id"
+        f"&limit=1&page={page}"
+    )
     try:
         response = requests.get(url)
         response.raise_for_status()

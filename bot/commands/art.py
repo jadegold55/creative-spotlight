@@ -34,11 +34,7 @@ class Art(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(
                 art_data["image_url"],
-                headers={
-                    "User-Agent": (
-                        "Mozilla/5.0 (compatible; " "CreativitySpotlightBot/1.0)"
-                    )
-                },
+                headers={"User-Agent": ("Mozilla/5.0 (compatible; " "CreativitySpotlightBot/1.0)")},
             ) as res:
                 log.info(f"IIIF download status: {res.status}")
                 if res.status != 200:
@@ -55,9 +51,7 @@ class Art(commands.Cog):
             description=(f"By {art_data['artist']}\n\n" f"{art_data['date']}"),
             color=discord.Color.purple(),
         )
-        await interaction.followup.send(
-            file=image_file, embed=art_embed, ephemeral=True
-        )
+        await interaction.followup.send(file=image_file, embed=art_embed, ephemeral=True)
 
 
 async def setup(bot):

@@ -9,7 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@tailwindcss/oxide-win32-x64-msvc": "^4.2.1",
     "autoprefixer": "^10.4.27",
     "next": "16.1.6",
     "postcss": "^8.5.6",

@@ -3,7 +3,6 @@ from discord import app_commands
 from discord.ext import commands
 from discord.ui import View
 
-
 from bot.apihelper.api import delete, post
 
 TIMEZONE_CHOICES = [
@@ -77,7 +76,10 @@ class Setup(commands.Cog):
         )
         embed = discord.Embed(
             title="🏆 Contest Setup",
-            description=f"Channel: {channel.mention}\nDay: {day.name}\nDuration: {duration} days\n\nSelect the time:",
+            description=(
+                f"Channel: {channel.mention}\nDay: {day.name}\n"
+                f"Duration: {duration} days\n\nSelect the time:"
+            ),
             color=discord.Color.gold(),
         )
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
@@ -135,9 +137,7 @@ class TimeSetupView(View):
 
     @discord.ui.select(
         placeholder="Hour",
-        options=[
-            discord.SelectOption(label=str(i), value=str(i)) for i in range(1, 13)
-        ],
+        options=[discord.SelectOption(label=str(i), value=str(i)) for i in range(1, 13)],
         min_values=1,
         max_values=1,
         row=0,
@@ -148,10 +148,7 @@ class TimeSetupView(View):
 
     @discord.ui.select(
         placeholder="Minute",
-        options=[
-            discord.SelectOption(label=f":{m:02d}", value=str(m))
-            for m in [0, 15, 30, 45]
-        ],
+        options=[discord.SelectOption(label=f":{m:02d}", value=str(m)) for m in [0, 15, 30, 45]],
         min_values=1,
         max_values=1,
         row=1,
@@ -260,10 +257,14 @@ class TimeSetupView(View):
             "Europe/Paris": "CET",
             "Asia/Tokyo": "JST",
         }
-        time_str = f"{self.hour}:{self.minute:02d} {self.period} ({tz_names.get(self.timezone, self.timezone)})"
+        timezone_name = tz_names.get(self.timezone, self.timezone)
+        time_str = f"{self.hour}:{self.minute:02d} {self.period} ({timezone_name})"
 
         await interaction.response.edit_message(
-            content=f"**{self.feature.title()}** configured!\nChannel: <#{self.channel_id}>\nTime: {time_str}",
+            content=(
+                f"**{self.feature.title()}** configured!\n"
+                f"Channel: <#{self.channel_id}>\nTime: {time_str}"
+            ),
             embed=None,
             view=None,
         )
