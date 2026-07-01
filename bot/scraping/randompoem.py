@@ -1,6 +1,7 @@
-import random
-import requests
 import logging
+import random
+
+import requests
 
 log = logging.getLogger(__name__)
 
@@ -8,9 +9,7 @@ log = logging.getLogger(__name__)
 def scrape(author=None, title=None):
     random_linect = random.randint(4, 20)
     if author:
-        url = (
-            "https://poetrydb.org/author,linecount/" + author + ";" + str(random_linect)
-        )
+        url = "https://poetrydb.org/author,linecount/" + author + ";" + str(random_linect)
     elif title:
         url = "https://poetrydb.org/title/" + title
     else:

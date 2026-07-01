@@ -17,9 +17,7 @@ class Poetry(commands.Cog):
     @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.command(name="poem", description="Get a random poem")
     @app_commands.describe(author="Enter by Author", title="Enter by title")
-    async def poem(
-        self, interaction: discord.Interaction, author: str = None, title: str = None
-    ):
+    async def poem(self, interaction: discord.Interaction, author: str = None, title: str = None):
         poem_data = await asyncio.to_thread(scrape, author=author, title=title)
         if not poem_data:
             await interaction.response.send_message(
@@ -38,7 +36,6 @@ class Poetry(commands.Cog):
         await interaction.response.send_message(
             f"Here's a poem by {poem_data['author']}", embed=poem_embed
         )
-
 
 
 async def setup(bot):

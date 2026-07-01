@@ -215,10 +215,16 @@ class Spotlight(commands.Cog):
                 replace_existing=True,
                 kwargs={"guild": guild},
             )
-            log.info("Scheduled contest start for guild %s at %s UTC", guild_id, start_utc.isoformat())
+            log.info(
+                "Scheduled contest start for guild %s at %s UTC", guild_id, start_utc.isoformat()
+            )
         elif now_utc < end_utc:
             self.active_contests[guild_id] = (end_utc, guild)
-            log.info("Contest already active for guild %s; scheduling end only at %s UTC", guild_id, end_utc.isoformat())
+            log.info(
+                "Contest already active for guild %s; scheduling end only at %s UTC",
+                guild_id,
+                end_utc.isoformat(),
+            )
 
         if now_utc < end_utc:
             self.scheduler.add_job(
@@ -280,7 +286,10 @@ class Spotlight(commands.Cog):
                 inline=False,
             )
             embed.set_footer(
-                text="This contest is a one-time event. Signed-up entries uploaded before the deadline are eligible."
+                text=(
+                    "This contest is a one-time event. Signed-up entries uploaded "
+                    "before the deadline are eligible."
+                )
             )
 
             await channel.send(embed=embed, view=ContestSignupView(self.bot, gid))
@@ -308,15 +317,15 @@ class Spotlight(commands.Cog):
         )
         if not winner:
             await channel.send(
-                "The contest has ended, but there were no eligible signed-up submissions with votes."
+                "The contest has ended, but there were no eligible signed-up "
+                "submissions with votes."
             )
             return
 
         embed = discord.Embed(
             title="Contest Winner!",
             description=(
-                "Congratulations to "
-                f"<@{winner['uploaderId']}> for winning the contest!"
+                "Congratulations to " f"<@{winner['uploaderId']}> for winning the contest!"
             ),
             color=discord.Color.gold(),
         )

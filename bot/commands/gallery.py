@@ -5,11 +5,10 @@ from collections import OrderedDict
 import aiohttp
 import discord
 from discord import app_commands
-from discord.ui import Button, View, LayoutView
-
 from discord.ext import commands
-from bot.apihelper.api import delete, post, get
+from discord.ui import Button, LayoutView, View
 
+from bot.apihelper.api import delete, get, post
 from bot.config import PUBLIC_URL
 
 
@@ -17,9 +16,7 @@ def group_images_into_posts(images):
     """Group a flat list of images by groupId into posts."""
     posts = OrderedDict()
     for img in images:
-        gid = img.get("groupId") or str(
-            img["id"]
-        )  # fallback for images without groupId
+        gid = img.get("groupId") or str(img["id"])  # fallback for images without groupId
         if gid not in posts:
             posts[gid] = []
         posts[gid].append(img)
@@ -48,9 +45,7 @@ class GalleryViewer(LayoutView):
         self.add_item(
             discord.ui.TextDisplay(
                 content=(
-                    f"**Title:** {title}\n"
-                    f"**Made by:** {mention}\n"
-                    f"**Votes:** {total_votes}"
+                    f"**Title:** {title}\n" f"**Made by:** {mention}\n" f"**Votes:** {total_votes}"
                 )
             )
         )
@@ -68,17 +63,13 @@ class GalleryViewer(LayoutView):
         # navigation and vote buttons in an action row
         nav_disabled = len(self.posts) <= 1
 
-        prev_btn = Button(
-            label="◀", style=discord.ButtonStyle.primary, disabled=nav_disabled
-        )
+        prev_btn = Button(label="◀", style=discord.ButtonStyle.primary, disabled=nav_disabled)
         prev_btn.callback = self._on_previous
 
         vote_btn = Button(label="❤️", style=discord.ButtonStyle.success)
         vote_btn.callback = self._on_vote
 
-        next_btn = Button(
-            label="▶", style=discord.ButtonStyle.primary, disabled=nav_disabled
-        )
+        next_btn = Button(label="▶", style=discord.ButtonStyle.primary, disabled=nav_disabled)
         next_btn.callback = self._on_next
 
         row = discord.ui.ActionRow(prev_btn, vote_btn, next_btn)
@@ -208,15 +199,11 @@ class Gallery(commands.Cog):
         form = aiohttp.FormData()
         if len(file_data) == 1:
             img_bytes, filename, content_type = file_data[0]
-            form.add_field(
-                "file", img_bytes, filename=filename, content_type=content_type
-            )
+            form.add_field("file", img_bytes, filename=filename, content_type=content_type)
             endpoint = "images/add"
         else:
             for img_bytes, filename, content_type in file_data:
-                form.add_field(
-                    "files", img_bytes, filename=filename, content_type=content_type
-                )
+                form.add_field("files", img_bytes, filename=filename, content_type=content_type)
             endpoint = "images/add-multiple"
 
         form.add_field("uploaderId", str(interaction.user.id))
@@ -225,9 +212,7 @@ class Gallery(commands.Cog):
         status, resp = await post(endpoint, headers=headers, data=form)
 
         if status != 201:
-            await interaction.followup.send(
-                f"Failed to upload: {status}", ephemeral=True
-            )
+            await interaction.followup.send(f"Failed to upload: {status}", ephemeral=True)
             return
 
         count = len(attachments)
@@ -252,22 +237,16 @@ class Gallery(commands.Cog):
         )
 
         if not images:
-            await interaction.followup.send(
-                "You have no submissions to delete.", ephemeral=True
-            )
+            await interaction.followup.send("You have no submissions to delete.", ephemeral=True)
             return
 
         options = [
-            discord.SelectOption(
-                label=img.get("title") or "Untitled", value=str(img["id"])
-            )
+            discord.SelectOption(label=img.get("title") or "Untitled", value=str(img["id"]))
             for img in images[:25]
         ]
 
         view = DeleteView(options)
-        await interaction.followup.send(
-            "Select a submission to delete:", view=view, ephemeral=True
-        )
+        await interaction.followup.send("Select a submission to delete:", view=view, ephemeral=True)
 
 
 class DeleteView(View):
@@ -285,14 +264,10 @@ class DeleteView(View):
         )
 
         if status != 204:
-            await interaction.response.edit_message(
-                content="Failed to delete.", view=None
-            )
+            await interaction.response.edit_message(content="Failed to delete.", view=None)
             return
 
-        await interaction.response.edit_message(
-            content="Submission deleted!", view=None
-        )
+        await interaction.response.edit_message(content="Submission deleted!", view=None)
 
 
 # entry(Required for load_extension)

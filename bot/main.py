@@ -1,11 +1,12 @@
 import logging
+import os
+import sys
 
 import discord
 from discord.ext import commands
-import os
-from bot.config import TOKEN
+
 from bot.apihelper.api import close_session
-import sys
+from bot.config import TOKEN
 
 sys.stdout.reconfigure(line_buffering=True)
 
@@ -20,7 +21,8 @@ log = logging.getLogger("bot")
 # subclass of bot to handle loading extensions and syncing commands on ready
 # this structure helps the bot setup be clean and modular,
 # providing a way manage extensions and command syncing.
-# cach extension is developed independently in the "commands" folder, and the bot will automatically load them on startup.
+# each extension is developed independently in the "commands" folder, and the
+# bot automatically loads them on startup.
 class MyBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
