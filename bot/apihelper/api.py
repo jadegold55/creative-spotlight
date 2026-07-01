@@ -1,7 +1,8 @@
 import logging
 
 import aiohttp
-from bot.config import BACKEND_URL, API_SERVICE_TOKEN
+
+from bot.config import API_SERVICE_TOKEN, BACKEND_URL
 
 log = logging.getLogger(__name__)
 
@@ -11,9 +12,7 @@ _session: aiohttp.ClientSession | None = None
 async def _get_session() -> aiohttp.ClientSession:
     global _session
     if _session is None or _session.closed:
-        _session = aiohttp.ClientSession(
-            headers={"Authorization": f"Bearer {API_SERVICE_TOKEN}"}
-        )
+        _session = aiohttp.ClientSession(headers={"Authorization": f"Bearer {API_SERVICE_TOKEN}"})
     return _session
 
 
@@ -28,9 +27,7 @@ async def close_session():
 async def get(path, params=None, headers=None):
     session = await _get_session()
     path = path.lstrip("/")
-    async with session.get(
-        f"{BACKEND_URL}/{path}", params=params, headers=headers
-    ) as response:
+    async with session.get(f"{BACKEND_URL}/{path}", params=params, headers=headers) as response:
         if response.status == 200:
             return await response.json()
         else:
@@ -50,7 +47,5 @@ async def post(path, params=None, data=None, headers=None):
 async def delete(path, params=None, headers=None):
     session = await _get_session()
     path = path.lstrip("/")
-    async with session.delete(
-        f"{BACKEND_URL}/{path}", params=params, headers=headers
-    ) as response:
+    async with session.delete(f"{BACKEND_URL}/{path}", params=params, headers=headers) as response:
         return response.status, await response.text()
