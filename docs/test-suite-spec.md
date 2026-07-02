@@ -87,12 +87,15 @@
 4. Add backend unit tests for `ServiceTokenFilter`.
 5. Add backend unit tests for `GalleryImageService` upload, grouping, vote, and delete edges.
 6. Add backend unit tests for `GalleryImageVoteService`.
-7. Run Python and backend test suites.
-8. Commit only the spec and test-suite changes, push the testing branch, and open a draft PR into `main`.
+7. Add mocked bot harness tests for extension loading, message handling, and shutdown cleanup.
+8. Add mocked bot command/setup tests for setup confirmation, reset cleanup, contest signup/scheduling, daily poem delivery, poem/art commands, and gallery command states.
+9. Run Python and backend test suites.
+10. Commit only the spec and test-suite changes, push the testing branch, and open a draft PR into `main`.
 
 ## Follow-On Tasks
 
 - Replace or isolate live poem scraper tests with mocked HTML fixtures.
-- Add mocked Discord interaction tests for gallery, upload, and delete commands.
+- Add deeper upload success-path tests that inspect multipart field contents.
+- Add full `GalleryViewer` component tests once Discord UI internals are wrapped behind a local helper.
 - Add Spring MVC controller slice tests for request binding, validation errors, and response status contracts.
 - Add persistence tests for JPA mappings once an in-memory or Testcontainers database strategy is chosen.

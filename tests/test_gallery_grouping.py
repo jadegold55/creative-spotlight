@@ -42,7 +42,10 @@ def test_group_images_into_posts_falls_back_to_image_id(monkeypatch):
     posts = gallery.group_images_into_posts(images)
 
     assert posts == [
-        [{"id": 10, "groupId": None}, {"id": 10, "groupId": None, "title": "same post"}],
+        [
+            {"id": 10, "groupId": None},
+            {"id": 10, "groupId": None, "title": "same post"},
+        ],
         [{"id": 11}],
     ]
 
