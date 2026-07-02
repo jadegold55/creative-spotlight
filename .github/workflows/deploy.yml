@@ -21,10 +21,29 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
           script: |
+            set -euo pipefail
             cd ~/creative-spotlight
-            git pull origin main
+            git pull --ff-only origin main
             bash scripts/load-secrets.sh
-            docker compose down
+            docker compose down --remove-orphans
+            docker system prune -af
+            docker builder prune -af
             docker compose up --build -d
-            docker image prune -f
+            for attempt in $(seq 1 24); do
+              bot_container="$(docker compose ps -q bot)"
+              if [ -n "$bot_container" ] && [ "$(docker inspect -f '{{.State.Running}}' "$bot_container")" = "true" ]; then
+                if docker compose logs --since=2m bot 2>&1 | grep -q "Logged in as"; then
+                  docker compose ps
+                  exit 0
+                fi
+              else
+                docker compose logs --tail=200 bot
+                exit 1
+              fi
+              sleep 5
+            done
+            echo "Bot did not report Discord login within 120 seconds."
+            docker compose logs --tail=200 bot
+            exit 1
