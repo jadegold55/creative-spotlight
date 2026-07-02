@@ -216,7 +216,9 @@ class Spotlight(commands.Cog):
                 kwargs={"guild": guild},
             )
             log.info(
-                "Scheduled contest start for guild %s at %s UTC", guild_id, start_utc.isoformat()
+                "Scheduled contest start for guild %s at %s UTC",
+                guild_id,
+                start_utc.isoformat(),
             )
         elif now_utc < end_utc:
             self.active_contests[guild_id] = (end_utc, guild)
@@ -235,7 +237,11 @@ class Spotlight(commands.Cog):
                 replace_existing=True,
                 kwargs={"guild": guild},
             )
-            log.info("Scheduled contest end for guild %s at %s UTC", guild_id, end_utc.isoformat())
+            log.info(
+                "Scheduled contest end for guild %s at %s UTC",
+                guild_id,
+                end_utc.isoformat(),
+            )
 
     async def clear_contest_for_guild(self, guild_id: int):
         self._remove_guild_jobs(guild_id)
